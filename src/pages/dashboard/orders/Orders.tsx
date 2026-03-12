@@ -43,7 +43,7 @@ export default function Orders() {
 
   const filteredOrders = orders.filter(order =>
     order.order_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    `${order.customer_id.first_name} ${order.customer_id.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+    (order.customer_id ? `${order.customer_id.first_name} ${order.customer_id.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) : false)
   );
 
   const getStatusColor = (status: OrderStatus) => {
@@ -116,7 +116,7 @@ export default function Orders() {
                   filteredOrders.map((order) => (
                     <TableRow key={order._id}>
                       <TableCell className="font-medium">{order.order_id}</TableCell>
-                      <TableCell>{`${order.customer_id.first_name} ${order.customer_id.last_name}`}</TableCell>
+                      <TableCell>{order.customer_id ? `${order.customer_id.first_name} ${order.customer_id.last_name}` : 'Unknown Customer'}</TableCell>
                       <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className={getStatusColor(order.order_status)}>

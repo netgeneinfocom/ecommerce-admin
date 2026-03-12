@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background -->
+  <rect width="64" height="64" fill="#FF6B35" rx="8"/>
+  
+  <!-- Letter S in white -->
+  <text x="32" y="48" font-size="48" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial, sans-serif">S</text>
+</svg>
