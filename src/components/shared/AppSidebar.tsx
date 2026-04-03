@@ -1,8 +1,7 @@
-import { LayoutDashboard, Package, ShoppingCart, Users, FolderOpen, Layers, Tag, ClipboardList, Megaphone } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, FolderOpen, Layers, Tag, ClipboardList, Megaphone, Warehouse, MapPin } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { ProfileMenu } from "@/components/shared/ProfileMenu";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ROUTES } from "@/core/config/routes";
 import { Ripple } from "@/components/ui/ripple";
 
@@ -42,6 +41,14 @@ const dashboardItems = [{
   title: "Promotions",
   url: ROUTES.DASHBOARD.PROMOTIONS,
   icon: Megaphone
+}, {
+  title: "Warehouses",
+  url: ROUTES.DASHBOARD.WAREHOUSES,
+  icon: Warehouse
+}, {
+  title: "Servable Pincodes",
+  url: ROUTES.DASHBOARD.PINCODES,
+  icon: MapPin
 }];
 
 export function AppSidebar() {
