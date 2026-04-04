@@ -102,3 +102,21 @@ export const SUPPLIER_ENDPOINTS = {
   CREATE: '/api/v1/admin/add-supplier',
   LIST: '/api/v1/admin/suppliers', // Assuming a list endpoint exists or will exist, but for now user only asked for create. I'll just add create.
 } as const;
+
+// Warehouse API endpoints
+export const WAREHOUSE_ENDPOINTS = {
+  ADD: '/api/v1/admin/add-warehouse',
+  LIST: '/api/v1/admin/warehouses',
+  UPDATE: '/api/v1/admin/update-warehouse',
+  DELETE: '/api/v1/admin/warehouse',
+} as const;
+
+// Pincode API endpoints
+export const PINCODE_ENDPOINTS = {
+  ADD: '/api/v1/admin/add-pincode-areas',
+  LIST: '/api/v1/admin/pincode-areas',
+  DELETE: '/api/v1/admin/delete-pincode',
+  DELETE_AREA: '/api/v1/admin/delete-area',
+  UPDATE_AREA: '/api/v1/admin/update-area',
+  UPDATE_STATUS: '/api/v1/admin/update-pincode-status',
+} as const;

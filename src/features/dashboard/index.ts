@@ -6,3 +6,5 @@ export * from "./subcategories";
 export * from "./brands";
 export * from "./users";
 export * from "./services";
+export * from "./warehouses";
+export * from "./pincodes";

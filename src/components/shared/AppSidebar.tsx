@@ -13,11 +13,18 @@ const dashboardItems = [{
   title: "Users",
   url: ROUTES.DASHBOARD.USERS,
   icon: Users
-}, {
-  title: "Products",
-  url: ROUTES.DASHBOARD.PRODUCTS,
-  icon: Package
-}, {
+},
+{
+  title: "Orders",
+  url: ROUTES.DASHBOARD.ORDERS,
+  icon: ShoppingCart
+},
+{
+  title: "Brand",
+  url: ROUTES.DASHBOARD.BRAND,
+  icon: Tag
+}, 
+{
   title: "Categories",
   url: ROUTES.DASHBOARD.CATEGORIES,
   icon: FolderOpen
@@ -25,23 +32,16 @@ const dashboardItems = [{
   title: "SubCategories",
   url: ROUTES.DASHBOARD.SUBCATEGORIES,
   icon: Layers
-}, {
-  title: "Brand",
-  url: ROUTES.DASHBOARD.BRAND,
-  icon: Tag
-}, {
-  title: "Orders",
-  url: ROUTES.DASHBOARD.ORDERS,
-  icon: ShoppingCart
-}, {
+},
+{
+  title: "Products",
+  url: ROUTES.DASHBOARD.PRODUCTS,
+  icon: Package
+},   {
   title: "Inventory",
   url: ROUTES.DASHBOARD.INVENTORY,
   icon: ClipboardList
-}, {
-  title: "Promotions",
-  url: ROUTES.DASHBOARD.PROMOTIONS,
-  icon: Megaphone
-}, {
+},  {
   title: "Warehouses",
   url: ROUTES.DASHBOARD.WAREHOUSES,
   icon: Warehouse
@@ -49,7 +49,11 @@ const dashboardItems = [{
   title: "Servable Pincodes",
   url: ROUTES.DASHBOARD.PINCODES,
   icon: MapPin
-}];
+},{
+  title: "Promotions",
+  url: ROUTES.DASHBOARD.PROMOTIONS,
+  icon: Megaphone
+},];
 
 export function AppSidebar() {
   const {

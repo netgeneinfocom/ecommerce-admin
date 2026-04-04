@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import React, { lazy } from "react";
 
 // Lazy load page components
 const Index = lazy(() => import("@/pages/Index"));
@@ -26,7 +26,12 @@ const UserEdit = lazy(() => import("@/pages/dashboard/users/UserEdit"));
 const Inventory = lazy(() => import("@/pages/dashboard/inventory/Inventory"));
 const Promotions = lazy(() => import("@/pages/dashboard/promotions/Promotions"));
 const Warehouses = lazy(() => import("@/pages/dashboard/warehouses/Warehouses"));
+const WarehouseAdd = lazy(() => import("@/pages/dashboard/warehouses/WarehouseAdd"));
+const WarehouseEdit = lazy(() => import("@/pages/dashboard/warehouses/WarehouseEdit"));
 const Pincodes = lazy(() => import("@/pages/dashboard/pincodes/Pincodes"));
+const PincodeAdd = lazy(() => import("@/pages/dashboard/pincodes/PincodeAdd"));
+const PincodeEdit = lazy(() => import("@/pages/dashboard/pincodes/PincodeEdit"));
+const AreaEdit = lazy(() => import("@/pages/dashboard/pincodes/AreaEdit"));
 
 // Route path constants
 export const ROUTES = {
@@ -54,14 +59,19 @@ export const ROUTES = {
     INVENTORY: "/dashboard/inventory",
     PROMOTIONS: "/dashboard/promotions",
     WAREHOUSES: "/dashboard/warehouses",
+    WAREHOUSES_ADD: "/dashboard/warehouses/add",
+    WAREHOUSES_EDIT: "/dashboard/warehouses/edit",
     PINCODES: "/dashboard/pincodes",
+    PINCODES_ADD: "/dashboard/pincodes/add",
+    PINCODES_EDIT: "/dashboard/pincodes/edit",
+    AREA_EDIT: "/dashboard/pincodes/edit-area",
   },
 } as const;
 
 // Route configuration with component mappings
 export interface RouteConfig {
   path: string;
-  element: React.LazyExoticComponent<() => JSX.Element>;
+  element: React.LazyExoticComponent<React.ComponentType<any>>;
   index?: boolean;
   children?: RouteConfig[];
 }
@@ -173,10 +183,30 @@ export const routeConfig: RouteConfig[] = [
         path: "warehouses",
         element: Warehouses,
       },
+      {
+        path: "warehouses/add",
+        element: WarehouseAdd,
+      },
+      {
+        path: "warehouses/edit",
+        element: WarehouseEdit,
+      },
       // Pincodes
       {
         path: "pincodes",
         element: Pincodes,
+      },
+      {
+        path: "pincodes/add",
+        element: PincodeAdd,
+      },
+      {
+        path: "pincodes/edit",
+        element: PincodeEdit,
+      },
+      {
+        path: "pincodes/edit-area",
+        element: AreaEdit,
       },
     ],
   },

@@ -39,12 +39,12 @@ export default function Products() {
           subcategoryService.listSubcategories(),
         ]);
 
-        setProducts(productsRes.products);
+        setProducts(productsRes?.products || []);
 
         // Create lookup maps for quick access
-        const brandsMap = new Map(brandsRes.data.map(b => [b.brand_id, b.brand_name]));
-        const categoriesMap = new Map(categoriesRes.catgoryProducts.map(c => [c.category_id, c.category_name]));
-        const subcategoriesMap = new Map(subcategoriesRes.data.map(s => [s.sub_category_id, s.sub_category_name]));
+        const brandsMap = new Map((brandsRes?.data || []).map(b => [b.brand_id, b.brand_name]));
+        const categoriesMap = new Map((categoriesRes?.catgoryProducts || []).map(c => [c.category_id, c.category_name]));
+        const subcategoriesMap = new Map((subcategoriesRes?.data || []).map(s => [s.sub_category_id, s.sub_category_name]));
 
         setBrands(brandsMap);
         setCategories(categoriesMap);
@@ -63,7 +63,7 @@ export default function Products() {
     fetchData();
   }, [toast]);
 
-  const filteredProducts = products.filter((product) =>
+  const filteredProducts = (products || []).filter((product) =>
     product.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase())
   );
