@@ -51,6 +51,22 @@ export interface ShippingAddress {
   __v: number;
 }
 
+export interface BestWarehouse {
+  _id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  pincode: string;
+  status: string;
+  warehouseId: string;
+  location: {
+    type: string;
+    coordinates: number[];
+  };
+}
+
 export interface Order {
   _id: string;
   customer_id: OrderCustomer;
@@ -61,6 +77,7 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   total_amount: number;
+  best_warehouse?: BestWarehouse;
   __v: number;
 }
 

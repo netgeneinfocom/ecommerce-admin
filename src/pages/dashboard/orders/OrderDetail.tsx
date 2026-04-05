@@ -12,6 +12,7 @@ import {
   OrderItemsCard,
   PriceSummaryCard,
   UpdateOrderStatusCard,
+  WarehouseInformationCard,
 } from "@/features/dashboard/orders";
 
 export default function OrderDetail() {
@@ -107,6 +108,9 @@ export default function OrderDetail() {
         <div className="lg:col-span-2 space-y-6">
           <OrderItemsCard items={order.order_items} />
           <PriceSummaryCard totalAmount={order.total_amount} />
+          {order.best_warehouse && (
+            <WarehouseInformationCard warehouse={order.best_warehouse} />
+          )}
         </div>
       </div>
     </div>
