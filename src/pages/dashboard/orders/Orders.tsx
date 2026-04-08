@@ -11,6 +11,7 @@ import { ROUTES } from "@/core/config/routes";
 import { Loader } from "@/components/loader/Loader";
 import { orderService } from "@/features/dashboard/orders/services";
 import { Order, OrderStatus } from "@/features/dashboard/orders/types";
+import { OrderInvoice } from "@/features/dashboard/orders";
 
 export default function Orders() {
   const navigate = useNavigate();
@@ -124,7 +125,8 @@ export default function Orders() {
                         </Badge>
                       </TableCell>
                       <TableCell>₹{order.total_amount.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right flex items-center justify-end gap-3">
+                        <OrderInvoice order={order} variant="link" />
                         <Button
                           variant="outline"
                           size="sm"
