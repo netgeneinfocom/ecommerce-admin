@@ -39,6 +39,14 @@ export function BillSummary({ billId, onBack }: BillSummaryProps) {
     }
   };
 
+  // Helper function to remove $ and return clean price
+  const cleanPrice = (price: string | number) => {
+    if (typeof price === 'string') {
+      return price.replace(/\$/g, '').trim();
+    }
+    return price.toString();
+  };
+
   const handlePrint = () => {
     if (!bill) return;
     const printContent = printRef.current;
@@ -121,8 +129,8 @@ export function BillSummary({ billId, onBack }: BillSummaryProps) {
                   <td>${item.supplier}</td>
                   <td style="text-align: center; font-weight: 600; color: #4F80FF;">${item.unit}</td>
                   <td style="text-align: center">${item.qty}</td>
-                  <td style="text-align: right">${item.price}</td>
-                  <td style="text-align: right; font-weight: 600; color: #111827;">${item.total}</td>
+                  <td style="text-align: right">₹${cleanPrice(item.price)}</td>
+                  <td style="text-align: right; font-weight: 600; color: #111827;">₹${cleanPrice(item.total)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -132,11 +140,11 @@ export function BillSummary({ billId, onBack }: BillSummaryProps) {
             <div class="totals-table">
               <div class="total-row">
                 <span class="total-label">Subtotal</span>
-                <span class="total-value">₹${bill.grand_total}</span>
+                <span class="total-value">₹${cleanPrice(bill.grand_total)}</span>
               </div>
               <div class="total-row grand">
                 <span class="total-label">Grand Total</span>
-                <span class="total-value">₹${bill.grand_total}</span>
+                <span class="total-value">₹${cleanPrice(bill.grand_total)}</span>
               </div>
             </div>
           </div>
@@ -260,12 +268,12 @@ export function BillSummary({ billId, onBack }: BillSummaryProps) {
 
       // Price
       doc.setTextColor(75, 85, 99);
-      doc.text(item.price, 165, yPos, { align: 'right' });
+      doc.text(`₹${cleanPrice(item.price)}`, 165, yPos, { align: 'right' });
 
       // Total
       doc.setTextColor(17, 24, 39);
       doc.setFont('helvetica', 'bold');
-      doc.text(item.total, pageWidth - 22, yPos, { align: 'right' });
+      doc.text(`₹${cleanPrice(item.total)}`, pageWidth - 22, yPos, { align: 'right' });
 
       // Row border
       doc.setDrawColor(243, 244, 246);
@@ -287,7 +295,7 @@ export function BillSummary({ billId, onBack }: BillSummaryProps) {
     doc.text('Subtotal', totalsX, yPos);
     doc.setTextColor(17, 24, 39);
     doc.setFont('helvetica', 'bold');
-    doc.text(bill.grand_total, pageWidth - 22, yPos, { align: 'right' });
+    doc.text(`₹${cleanPrice(bill.grand_total)}`, pageWidth - 22, yPos, { align: 'right' });
 
     yPos += 8;
 
@@ -303,7 +311,7 @@ export function BillSummary({ billId, onBack }: BillSummaryProps) {
     doc.setFontSize(14);
     doc.setTextColor(79, 128, 255);
     doc.setFont('helvetica', 'bold');
-    doc.text(bill.grand_total, pageWidth - 22, yPos + 2, { align: 'right' });
+    doc.text(`₹${cleanPrice(bill.grand_total)}`, pageWidth - 22, yPos + 2, { align: 'right' });
 
     // --- Footer ---
     yPos = pageHeight - 20;
