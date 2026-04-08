@@ -13,6 +13,7 @@ import {
   PriceSummaryCard,
   UpdateOrderStatusCard,
   WarehouseInformationCard,
+  OrderInvoice,
 } from "@/features/dashboard/orders";
 
 export default function OrderDetail() {
@@ -92,7 +93,9 @@ export default function OrderDetail() {
               Placed on {new Date(order.createdAt).toLocaleString()}
             </p>
           </div>
-          {/* Status update dropdown removed, now handled by UpdateOrderStatusCard */}
+          <div className="flex items-center gap-3">
+            <OrderInvoice order={order} variant="outline" />
+          </div>
         </div>
       </div>
 
