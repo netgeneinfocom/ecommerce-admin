@@ -69,6 +69,15 @@ export function AddInventory() {
         setItems(items.filter(item => item.id !== id));
     };
 
+    // Helper function to remove $ and return clean price
+    const cleanPrice = (price: number | string): number => {
+        if (typeof price === 'string') {
+            const cleaned = price.replace(/\$/g, '').trim();
+            return parseFloat(cleaned) || 0;
+        }
+        return typeof price === 'number' ? price : 0;
+    };
+
     const grandTotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
 
     const isValidItem = (item: AddInventoryItem) => {
@@ -95,7 +104,7 @@ export function AddInventory() {
                     inventory_id: item.productId,
                     supplier_id: item.supplierId,
                     quantity: item.quantity,
-                    unit_price: item.price,
+                    unit_price: cleanPrice(item.price),
                 })),
             };
 

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign } from "lucide-react";
+import { IndianRupee } from "lucide-react";
 
 interface PriceSummaryCardProps {
   totalAmount: number;
@@ -10,7 +10,7 @@ export function PriceSummaryCard({ totalAmount }: PriceSummaryCardProps) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-primary" />
+          <IndianRupee className="h-4 w-4 text-primary" />
           Price Summary
         </CardTitle>
       </CardHeader>
