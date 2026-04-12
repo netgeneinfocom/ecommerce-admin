@@ -1,7 +1,6 @@
 import { LayoutDashboard, Package, ShoppingCart, Users, FolderOpen, Layers, Tag, ClipboardList, Megaphone, Warehouse, MapPin } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
-import { ProfileMenu } from "@/components/shared/ProfileMenu";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
 import { ROUTES } from "@/core/config/routes";
 import { Ripple } from "@/components/ui/ripple";
 
@@ -23,7 +22,7 @@ const dashboardItems = [{
   title: "Brand",
   url: ROUTES.DASHBOARD.BRAND,
   icon: Tag
-}, 
+},
 {
   title: "Categories",
   url: ROUTES.DASHBOARD.CATEGORIES,
@@ -37,11 +36,11 @@ const dashboardItems = [{
   title: "Products",
   url: ROUTES.DASHBOARD.PRODUCTS,
   icon: Package
-},   {
+}, {
   title: "Inventory",
   url: ROUTES.DASHBOARD.INVENTORY,
   icon: ClipboardList
-},  {
+}, {
   title: "Warehouses",
   url: ROUTES.DASHBOARD.WAREHOUSES,
   icon: Warehouse
@@ -49,7 +48,7 @@ const dashboardItems = [{
   title: "Servable Pincodes",
   url: ROUTES.DASHBOARD.PINCODES,
   icon: MapPin
-},{
+}, {
   title: "Promotions",
   url: ROUTES.DASHBOARD.PROMOTIONS,
   icon: Megaphone
@@ -71,21 +70,21 @@ export function AppSidebar() {
   return <Sidebar collapsible="icon" className="border-r border-border/10 shadow-lg bg-card data-[state=collapsed]:w-24 data-[state=expanded]:w-48">
     <SidebarContent>
       {/* Logo/Brand Section */}
-      <div className={`px-4 ${open ? 'py-6' : 'py-4'}`}>
+      <div className={`${open ? 'px-4 py-6' : 'px-1 py-4'}`}>
         {open ? (
           <div className="flex items-center">
-            <img 
-              src="/logos/panun-logo.svg" 
-              alt="PANUN" 
-              className="h-10 w-auto object-contain filter "
+            <img
+              src="/logos/panun-logo.svg"
+              alt="PANUN"
+              className="h-12 w-auto object-contain filter "
             />
           </div>
         ) : (
           <div className="flex justify-center">
-            <img 
-              src="/logos/panun-logo.svg" 
-              alt="P" 
-              className="h-8 w-8 object-contain" 
+            <img
+              src="/logos/favicon.png"
+              alt="P"
+              className="h-20 w-20 object-contain filter"
             />
           </div>
         )}
@@ -93,7 +92,6 @@ export function AppSidebar() {
 
       {/* Dashboard Section */}
       <SidebarGroup>
-        {open}
         <SidebarGroupContent>
           <SidebarMenu className="space-y-2">
             {dashboardItems.map(item => <SidebarMenuItem key={item.title}>
@@ -110,16 +108,5 @@ export function AppSidebar() {
         </SidebarGroupContent>
       </SidebarGroup>
     </SidebarContent>
-
-    {/* Footer Profile Section */}
-    <SidebarFooter className="border-t">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <div className={`p-2 ${!open && "flex justify-center"}`}>
-            <ProfileMenu variant={open ? "full" : "icon"} />
-          </div>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarFooter>
   </Sidebar>;
 }

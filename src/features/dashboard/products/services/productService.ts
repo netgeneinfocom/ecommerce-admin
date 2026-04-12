@@ -84,10 +84,11 @@ export const productService = {
 
   updateProduct: async (
     productId: string,
-    data: FormData
+    data: FormData,
+    dimensionId: string
   ): Promise<ProductResponse> => {
     const response = await apiClient.put<ProductResponse>(
-      `${PRODUCT_ENDPOINTS.UPDATE}?product_id=${productId}`,
+      `${PRODUCT_ENDPOINTS.UPDATE}?product_id=${productId}&dimension_id=${dimensionId}`,
       data,
       {
         headers: {
@@ -101,6 +102,13 @@ export const productService = {
   listProducts: async (): Promise<ProductsListResponse> => {
     const response = await apiClient.get<ProductsListResponse>(
       PRODUCT_ENDPOINTS.LIST
+    );
+    return response.data;
+  },
+
+  deleteProduct: async (productId: string): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.delete<{ success: boolean; message: string }>(
+      `${PRODUCT_ENDPOINTS.DELETE}?product_id=${productId}`
     );
     return response.data;
   },

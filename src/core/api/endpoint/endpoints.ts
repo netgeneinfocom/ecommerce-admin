@@ -15,7 +15,7 @@ export const BRAND_ENDPOINTS = {
   CREATE: '/api/v1/admin/add-brand',
   LIST: '/api/v1/admin/brands/products',
   UPDATE: '/api/v1/admin/update-brand',
-  DELETE: '/api/v1/admin/delete-brand',
+  DELETE: '/api/v1/admin/brand',
 } as const;
 
 // Category API endpoints
@@ -31,7 +31,7 @@ export const SUBCATEGORY_ENDPOINTS = {
   CREATE: '/api/v1/admin/add-subcategory',
   LIST: '/api/v1/admin/sub-categories/products',
   UPDATE: '/api/v1/admin/update-subcategory',
-  DELETE: '/api/v1/admin/delete-subcategory',
+  DELETE: '/api/v1/admin/sub-category',
 } as const;
 
 // User API endpoints
@@ -47,13 +47,14 @@ export const PRODUCT_ENDPOINTS = {
   CREATE: '/api/v1/admin/add-product',
   LIST: '/api/v1/admin/products',
   UPDATE: '/api/v1/admin/update-product',
-  DELETE: '/api/v1/admin/delete-product',
+  DELETE: '/api/v1/admin/product',
 } as const;
 
 // Metrics (Dimensions/Units) API endpoints
 export const METRICS_ENDPOINTS = {
   ADD: '/api/v1/admin/add-metrics',
   LIST: '/api/v1/admin/metrics',
+  DELETE: '/api/v1/admin/metrics/delete',
 } as const;
 
 // Inventory API endpoints
@@ -62,6 +63,7 @@ export const INVENTORY_ENDPOINTS = {
   ADD_BILL: '/api/v1/admin/add-inventory-bill',
   BILL_LIST: '/api/v1/admin/inventory-bills',
   BILL_BY_ID: '/api/v1/admin/inventory-bill-by-id',
+  UPDATE: '/api/v1/admin/update-inventory',
 } as const;
 
 // Order API endpoints
@@ -100,7 +102,8 @@ export const COUNTDOWN_ENDPOINTS = {
 // Supplier API endpoints
 export const SUPPLIER_ENDPOINTS = {
   CREATE: '/api/v1/admin/add-supplier',
-  LIST: '/api/v1/admin/suppliers', // Assuming a list endpoint exists or will exist, but for now user only asked for create. I'll just add create.
+  LIST: '/api/v1/admin/suppliers',
+  DELETE: '/api/v1/admin/suppliers/delete',
 } as const;
 
 // Warehouse API endpoints

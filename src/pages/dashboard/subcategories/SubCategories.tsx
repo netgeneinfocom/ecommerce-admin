@@ -12,6 +12,7 @@ import { ROUTES } from "@/core/config/routes";
 import { subcategoryService, useSubCategoryStore } from "@/features/dashboard/subcategories";
 
 import { Loader } from "@/components/loader/Loader";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 
 interface SubCategory {
   sub_category_id: string;
@@ -32,6 +33,9 @@ export default function SubCategories() {
   const itemsPerPage = 10;
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [subCategoryToDelete, setSubCategoryToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -67,20 +71,39 @@ export default function SubCategories() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedSubCategories = filteredSubCategories.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleDeleteSubCategory = async (id: string) => {
+  const handleDeleteSubCategory = (id: string) => {
+    setSubCategoryToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!subCategoryToDelete) return;
+    
     try {
-      // TODO: Call delete API when available
-      setSubCategories(subCategories.filter(sub => sub.sub_category_id !== id));
-      toast({
-        title: "Success",
-        description: "SubCategory deleted successfully"
-      });
-    } catch (error) {
+      setIsDeleting(true);
+      const response = await subcategoryService.deleteSubcategory(subCategoryToDelete);
+      if (response.success) {
+        setSubCategories(subCategories.filter(sub => sub.sub_category_id !== subCategoryToDelete));
+        toast({
+          title: "Success",
+          description: response.message || "SubCategory deleted successfully"
+        });
+        setIsDeleteDialogOpen(false);
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to delete subcategory",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete subcategory",
+        description: error.response?.data?.message || "Failed to delete subcategory",
         variant: "destructive"
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -227,6 +250,15 @@ export default function SubCategories() {
           </div>
         )}
       </Card>
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        isLoading={isDeleting}
+        title="Delete SubCategory"
+        description="Are you sure you want to delete this subcategory? This action cannot be undone and may affect products linked to it."
+      />
+
       {isLoading && <Loader fullScreen message="Loading subcategories..." />}
     </div>
   );

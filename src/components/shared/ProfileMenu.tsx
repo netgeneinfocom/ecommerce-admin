@@ -12,7 +12,7 @@ import { useAuth } from "@/features/auth/hooks";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/core/config/routes";
 import { LogoutConfirmDialog } from "./LogoutConfirmDialog";
-import shaheenLogo from "@/assets/profile_avatar.jpg";
+
 
 interface ProfileMenuProps {
   variant?: "icon" | "full";
@@ -58,7 +58,7 @@ export function ProfileMenu({ variant = "icon" }: ProfileMenuProps) {
         {variant === "icon" ? (
           <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full p-0">
             <Avatar className="h-10 w-10 border-2 border-primary/20">
-              <AvatarImage src={shaheenLogo} alt={userName} />
+              <AvatarImage src="/images/user-grey.png" alt={userName} />
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {userInitials}
               </AvatarFallback>
@@ -68,14 +68,14 @@ export function ProfileMenu({ variant = "icon" }: ProfileMenuProps) {
           <Button variant="ghost" className="w-full justify-start p-2 h-auto hover:bg-sidebar-accent">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border-2 border-primary/20">
-                <AvatarImage src={shaheenLogo} alt={userName} />
+                <AvatarImage src="/images/user-grey.png" alt={userName} />
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 text-left">
-                <p className="font-semibold text-sm">{userName}</p>
-                <p className="text-xs text-muted-foreground">{userEmail}</p>
+              <div className="flex-1 text-left min-w-0">
+                <p className="font-semibold text-xs leading-none mb-1 truncate">{userName}</p>
+                <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
               </div>
             </div>
           </Button>
@@ -84,14 +84,14 @@ export function ProfileMenu({ variant = "icon" }: ProfileMenuProps) {
       <PopoverContent className="w-64 p-4" align="end">
         <div className="flex items-center gap-3 mb-3">
           <Avatar className="h-12 w-12 border-2 border-primary/20">
-            <AvatarImage src={shaheenLogo} alt={userName} />
+            <AvatarImage src="/images/user-grey.png" alt={userName} />
             <AvatarFallback className="bg-primary text-primary-foreground">
               {userInitials}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1">
-            <p className="font-semibold text-sm">{userName}</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-xs leading-none mb-1 truncate">{userName}</p>
+            <p className="text-xs text-muted-foreground truncate">
               {userEmail} <span className="text-blue-500">({userRole})</span>
             </p>
           </div>

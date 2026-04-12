@@ -4,3 +4,4 @@ export { InventoryItemRow } from "./InventoryItemRow";
 export { RecentBills } from "./RecentBills";
 export { BillSummary } from "./BillSummary";
 export { ManageSuppliersDialog } from "./ManageSuppliersDialog";
+export { EditInventoryDialog } from "./EditInventoryDialog";

@@ -63,4 +63,11 @@ export const brandService = {
     );
     return response.data;
   },
+
+  deleteBrand: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.delete<{ success: boolean; message: string }>(
+      `${BRAND_ENDPOINTS.DELETE}?brand_id=${id}`
+    );
+    return response.data;
+  },
 };

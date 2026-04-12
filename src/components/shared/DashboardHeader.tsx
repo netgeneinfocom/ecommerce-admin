@@ -20,7 +20,7 @@ export function DashboardHeader() {
         </div>
 
         <div className="flex items-center gap-1 ml-auto px-4 md:px-6">
-          <div className="ml-2 pl-2 border-l">
+          <div className="ml-2 pl-2">
             <ProfileMenu />
           </div>
         </div>

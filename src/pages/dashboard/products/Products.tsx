@@ -14,6 +14,7 @@ import { brandService } from "@/features/dashboard/brands";
 import { categoryService } from "@/features/dashboard/categories";
 import { subcategoryService } from "@/features/dashboard/subcategories";
 import { Loader } from "@/components/loader/Loader";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 
 export default function Products() {
   const navigate = useNavigate();
@@ -24,6 +25,9 @@ export default function Products() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const itemsPerPage = 10;
   const { toast } = useToast();
   const { setCurrentProduct } = useProductStore();
@@ -73,11 +77,39 @@ export default function Products() {
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
   const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter((p) => p._id !== id));
-    toast({
-      title: "Product deleted",
-      description: "The product has been removed successfully.",
-    });
+    setProductToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      const response = await productService.deleteProduct(productToDelete);
+      if (response.success) {
+        setProducts(products.filter((p) => p._id !== productToDelete));
+        toast({
+          title: "Success",
+          description: response.message || "Product deleted successfully"
+        });
+        setIsDeleteDialogOpen(false);
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to delete product",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete product",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -246,6 +278,15 @@ export default function Products() {
           </div>
         )}
       </Card>
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        isLoading={isDeleting}
+        title="Delete Product"
+        description="Are you sure you want to delete this product? This action cannot be undone."
+      />
+
       {isLoading && <Loader fullScreen message="Loading products..." />}
     </div>
   );

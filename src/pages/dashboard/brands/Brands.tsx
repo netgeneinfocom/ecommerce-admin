@@ -11,6 +11,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { ROUTES } from "@/core/config/routes";
 import { brandService, useBrandStore } from "@/features/dashboard/brands";
 import { Loader } from "@/components/loader/Loader";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 
 import { Brand as BrandType } from "@/features/dashboard/brands/types";
 
@@ -23,6 +24,9 @@ export default function Brand() {
   const itemsPerPage = 10;
   const [brands, setBrands] = useState<BrandType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [brandToDelete, setBrandToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBrands();
@@ -55,20 +59,39 @@ export default function Brand() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedBrands = filteredBrands.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleDeleteBrand = async (id: string) => {
+  const handleDeleteBrand = (id: string) => {
+    setBrandToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!brandToDelete) return;
+    
     try {
-      // TODO: Call delete API when available
-      setBrands(brands.filter(brand => brand.brand_id !== id));
-      toast({
-        title: "Success",
-        description: "Brand deleted successfully"
-      });
-    } catch (error) {
+      setIsDeleting(true);
+      const response = await brandService.deleteBrand(brandToDelete);
+      if (response.success) {
+        setBrands(brands.filter(brand => brand.brand_id !== brandToDelete));
+        toast({
+          title: "Success",
+          description: response.message || "Brand deleted successfully"
+        });
+        setIsDeleteDialogOpen(false);
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to delete brand",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete brand",
+        description: error.response?.data?.message || "Failed to delete brand",
         variant: "destructive"
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -208,6 +231,15 @@ export default function Brand() {
           </div>
         )}
       </Card>
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        isLoading={isDeleting}
+        title="Delete Brand"
+        description="Are you sure you want to delete this brand? This action cannot be undone and may affect products linked to it."
+      />
+
       {isLoading && <Loader fullScreen message="Loading brands..." />}
     </div>
   );
