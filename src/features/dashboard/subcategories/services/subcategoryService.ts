@@ -66,4 +66,11 @@ export const subcategoryService = {
     );
     return response.data;
   },
+
+  deleteSubcategory: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.delete<{ success: boolean; message: string }>(
+      `${SUBCATEGORY_ENDPOINTS.DELETE}?subcategory_id=${id}`
+    );
+    return response.data;
+  },
 };

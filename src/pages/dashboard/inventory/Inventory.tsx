@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
     Pagination,
     PaginationContent,
@@ -14,7 +15,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Loader } from "@/components/loader/Loader";
-import { ManageUnitsDialog, inventoryService, AddInventory, ManageSuppliersDialog } from "@/features/dashboard/inventory";
+import { ManageUnitsDialog, inventoryService, AddInventory, ManageSuppliersDialog, EditInventoryDialog } from "@/features/dashboard/inventory";
 import { InventoryItem } from "@/features/dashboard/inventory/types";
 import { useToast } from "@/core/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +30,8 @@ export default function Inventory() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [activeTab, setActiveTab] = useState("show-inventory");
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     useEffect(() => {
         if (activeTab === "show-inventory") {
@@ -158,12 +161,13 @@ export default function Inventory() {
                                             <TableHead>SKU</TableHead>
                                             <TableHead>STOCK LEVEL</TableHead>
                                             <TableHead>STATUS</TableHead>
+                                            <TableHead className="text-right">ACTIONS</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredItems.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                                                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                                                     No products found
                                                 </TableCell>
                                             </TableRow>
@@ -209,6 +213,18 @@ export default function Inventory() {
                                                                     Out of Stock
                                                                 </Badge>
                                                             )}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => {
+                                                                    setSelectedItem(item);
+                                                                    setIsEditOpen(true);
+                                                                }}
+                                                            >
+                                                                <Pencil className="w-4 h-4" />
+                                                            </Button>
                                                         </TableCell>
                                                     </TableRow>
                                                 );
@@ -262,6 +278,13 @@ export default function Inventory() {
             </Tabs>
 
             {isLoading && <Loader fullScreen message="Loading inventory..." />}
+
+            <EditInventoryDialog
+                open={isEditOpen}
+                onOpenChange={setIsEditOpen}
+                item={selectedItem}
+                onSuccess={fetchInventory}
+            />
         </div>
     );
 }

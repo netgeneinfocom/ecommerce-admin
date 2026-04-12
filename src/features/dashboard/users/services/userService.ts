@@ -38,7 +38,7 @@ export const userService = {
 
   deleteUser: async (userId: string): Promise<{ success: boolean; message: string }> => {
     const response = await apiClient.delete<{ success: boolean; message: string }>(
-      `${USER_ENDPOINTS.DELETE}/${userId}`
+      `${USER_ENDPOINTS.DELETE}?user_id=${userId}`
     );
     return response.data;
   },

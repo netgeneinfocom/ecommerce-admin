@@ -75,4 +75,19 @@ export const inventoryService = {
         );
         return response.data.suppliers;
     },
+
+    deleteSupplier: async (supplierId: string): Promise<{ success: boolean; message: string }> => {
+        const response = await apiClient.delete<{ success: boolean; message: string }>(
+            `${SUPPLIER_ENDPOINTS.DELETE}?supplier_id=${supplierId}`
+        );
+        return response.data;
+    },
+
+    updateInventory: async (inventoryId: string, data: any): Promise<{ success: boolean; message: string }> => {
+        const response = await apiClient.patch<{ success: boolean; message: string }>(
+            `${INVENTORY_ENDPOINTS.UPDATE}?inventory_id=${inventoryId}`,
+            data
+        );
+        return response.data;
+    },
 };

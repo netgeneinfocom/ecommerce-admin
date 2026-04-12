@@ -15,13 +15,30 @@ import {
   RichTextEditor
 } from "@/components/shared";
 import { Loader } from "@/components/loader/Loader";
-import { productService, useProductStore } from "@/features/dashboard/products";
+import {
+  productService,
+  useProductStore,
+} from "@/features/dashboard/products";
+import { brandService } from "@/features/dashboard/brands";
+import { categoryService } from "@/features/dashboard/categories";
+import { subcategoryService } from "@/features/dashboard/subcategories";
+import { dimensionService } from "@/features/dashboard/inventory";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+type Dimension = {
+  _id: string;
+  dimension_name: string;
+};
 
 type ProductFormData = {
   name: string;
   description: string;
+  brand: string;
+  category: string;
+  subCategory: string;
   manufacturer: string;
   tags: string[];
+  dimensionId: string;
   price: number;
   discount: number;
   newBadge: boolean;
@@ -33,6 +50,26 @@ type ProductFormData = {
   coverImageFiles: File[];
 };
 
+type Brand = {
+  brand_id: string;
+  brand_name: string;
+  brand_logo: string;
+};
+
+type Category = {
+  category_id: string;
+  category_name: string;
+  category_logo: string;
+};
+
+type Subcategory = {
+  sub_category_id: string;
+  sub_category_name: string;
+  sub_category_logo: string;
+  category_name: string;
+  parent_category?: string;
+};
+
 export default function ProductEdit() {
   const navigate = useNavigate();
   const { productId } = useParams();
@@ -40,14 +77,23 @@ export default function ProductEdit() {
 
   const { currentProduct } = useProductStore();
 
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [dimensions, setDimensions] = useState<Dimension[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize form with current product data from store
   const [formData, setFormData] = useState<ProductFormData>({
     name: currentProduct?.product_name || "",
     description: currentProduct?.product_description || "",
+    brand: currentProduct?.product_brand || "",
+    category: currentProduct?.product_category || "",
+    subCategory: currentProduct?.product_sub_category || "",
     manufacturer: currentProduct?.manufacturer || "",
     tags: currentProduct?.tags?.map(t => t.tag_name) || [],
+    dimensionId: "", // Will be set after fetching dimensions
     price: currentProduct?.product_price || 0,
     discount: currentProduct?.discount_precentage || 0,
     newBadge: currentProduct?.isNew === true || currentProduct?.isNew === "1" || currentProduct?.isNew === "true",
@@ -59,7 +105,65 @@ export default function ProductEdit() {
     coverImageFiles: [],
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [brandsRes, categoriesRes, subcategoriesRes, metricsRes] = await Promise.all([
+          brandService.listBrands(),
+          categoryService.listCategories(),
+          subcategoryService.listSubcategories(),
+          dimensionService.getMetrics(),
+        ]);
+
+        setBrands(brandsRes.data);
+        setCategories(categoriesRes.catgoryProducts);
+
+        // Set dimensions and find current product's dimension ID
+        if (metricsRes.success) {
+          const dimensionsList = metricsRes.metrics.map(m => ({
+            _id: m._id,
+            dimension_name: m.dimension_name,
+          }));
+          setDimensions(dimensionsList);
+
+          // Find the dimension ID that matches currentProduct.dimensions (which is a string name)
+          if (currentProduct?.dimensions) {
+            const currentDim = dimensionsList.find(d => d.dimension_name === currentProduct.dimensions);
+            if (currentDim) {
+              setFormData(prev => ({ ...prev, dimensionId: currentDim._id }));
+            }
+          }
+        }
+
+        // Map subcategories to include parent_category ID based on category_name
+        const mappedSubcategories = subcategoriesRes.data.map(sub => {
+          const parentCat = categoriesRes.catgoryProducts.find(c => c.category_name === sub.category_name);
+          return {
+            ...sub,
+            parent_category: parentCat?.category_id
+          };
+        });
+
+        setSubcategories(mappedSubcategories);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load form data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [toast]);
+
   const actualPrice = formData.price - (formData.price * formData.discount / 100);
+  const availableSubCategories = formData.category
+    ? subcategories.filter(sub => sub.parent_category === formData.category)
+    : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +205,20 @@ export default function ProductEdit() {
         apiFormData.append('cover_images', file);
       });
 
-      await productService.updateProduct(productId, apiFormData);
+      // Append IDs to FormData as the URL now only contains product_id and dimension_id
+      apiFormData.append('brand_id', formData.brand);
+      apiFormData.append('category_id', formData.category);
+      apiFormData.append('sub_category_id', formData.subCategory);
+
+      // Get dimension name from ID for the dimensions field
+      const selectedDimension = dimensions.find(d => d._id === formData.dimensionId);
+      apiFormData.append('dimensions', selectedDimension?.dimension_name || '');
+
+      await productService.updateProduct(
+        productId,
+        apiFormData,
+        formData.dimensionId
+      );
 
       toast({
         title: "Success",
@@ -109,10 +226,11 @@ export default function ProductEdit() {
       });
 
       navigate(ROUTES.DASHBOARD.PRODUCTS);
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to update product";
       toast({
         title: "Error",
-        description: "Failed to update product",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -138,6 +256,10 @@ export default function ProductEdit() {
         </Card>
       </div>
     );
+  }
+
+  if (isLoading) {
+    return <Loader fullScreen message="Loading product data..." />;
   }
 
   return (
@@ -166,6 +288,71 @@ export default function ProductEdit() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="brand">Brand *</Label>
+                <Select
+                  value={formData.brand}
+                  onValueChange={(value) => setFormData({ ...formData, brand: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select brand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.brand_id} value={brand.brand_id}>
+                        {brand.brand_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category *</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => setFormData({ ...formData, category: value, subCategory: "" })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.category_id} value={cat.category_id}>
+                        {cat.category_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="subCategory">Sub Category *</Label>
+                <Select
+                  value={formData.subCategory}
+                  onValueChange={(value) => setFormData({ ...formData, subCategory: value })}
+                  disabled={!formData.category}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={formData.category ? "Select sub category" : "Select category first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSubCategories.map((subCat) => (
+                      <SelectItem key={subCat.sub_category_id} value={subCat.sub_category_id}>
+                        {subCat.sub_category_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-1">
+              <div className="space-y-2">
                 <Label htmlFor="manufacturer">Manufacturer</Label>
                 <Input
                   placeholder="Enter manufacturer name"
@@ -191,6 +378,45 @@ export default function ProductEdit() {
               onChange={(tags) => setFormData({ ...formData, tags })}
               placeholder="Type and press Enter"
             />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Dimensions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {dimensions.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No Dimensions found.{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate(ROUTES.DASHBOARD.INVENTORY)}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Add a dimension
+                </button>
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="dimensionId">Dimension Type *</Label>
+                <Select
+                  value={formData.dimensionId}
+                  onValueChange={(value) => setFormData({ ...formData, dimensionId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select dimension" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dimensions.map((dim) => (
+                      <SelectItem key={dim._id} value={dim._id}>
+                        {dim.dimension_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </CardContent>
         </Card>
 

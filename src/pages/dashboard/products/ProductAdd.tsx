@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -163,6 +164,15 @@ export default function ProductAdd() {
       return;
     }
 
+    if (dimensions.length === 0) {
+      toast({
+        title: "Error",
+        description: "No Dimensions found. Add a dimension",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -206,10 +216,11 @@ export default function ProductAdd() {
       });
 
       navigate(ROUTES.DASHBOARD.PRODUCTS);
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to add product";
       toast({
         title: "Error",
-        description: "Failed to add product",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -342,21 +353,34 @@ export default function ProductAdd() {
             <CardTitle>Dimensions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="dimensionId">Dimension Type *</Label>
-              <Select value={formData.dimensionId} onValueChange={(value) => setFormData({ ...formData, dimensionId: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select dimension" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dimensions.map((dim) => (
-                    <SelectItem key={dim._id} value={dim._id}>
-                      {dim.dimension_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {dimensions.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No Dimensions found.{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate(ROUTES.DASHBOARD.INVENTORY)}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Add a dimension
+                </button>
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="dimensionId">Dimension Type *</Label>
+                <Select value={formData.dimensionId} onValueChange={(value) => setFormData({ ...formData, dimensionId: value })}>
+                  <SelectTrigger tabIndex={0}>
+                    <SelectValue placeholder="Select dimension" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dimensions.map((dim) => (
+                      <SelectItem key={dim._id} value={dim._id}>
+                        {dim.dimension_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </CardContent>
         </Card>
 

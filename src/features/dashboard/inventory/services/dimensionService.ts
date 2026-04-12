@@ -44,4 +44,11 @@ export const dimensionService = {
         );
         return response.data;
     },
+
+    deleteMetric: async (metricId: string): Promise<{ success: boolean; message: string }> => {
+        const response = await apiClient.delete<{ success: boolean; message: string }>(
+            `${METRICS_ENDPOINTS.DELETE}?metric_id=${metricId}`
+        );
+        return response.data;
+    },
 };

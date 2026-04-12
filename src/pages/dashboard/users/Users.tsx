@@ -12,6 +12,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { ROUTES } from "@/core/config/routes";
 import { Loader } from "@/components/loader/Loader";
 import { userService } from "@/features/dashboard/users/services/userService";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 
 export default function Users() {
   const { toast } = useToast();
@@ -19,6 +20,8 @@ export default function Users() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const itemsPerPage = 10;
 
   const { data, isLoading } = useQuery({
@@ -34,6 +37,7 @@ export default function Users() {
         title: "Success",
         description: "User deleted successfully"
       });
+      setIsDeleteDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
@@ -57,8 +61,13 @@ export default function Users() {
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
 
   const handleDeleteUser = (id: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      deleteMutation.mutate(id);
+    setUserToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (userToDelete) {
+      deleteMutation.mutate(userToDelete);
     }
   };
 
@@ -198,6 +207,15 @@ export default function Users() {
           </div>
         )}
       </Card>
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        isLoading={deleteMutation.isPending}
+        title="Delete User"
+        description="Are you sure you want to delete this user? This action cannot be undone."
+      />
+
       {isLoading && <Loader fullScreen message="Loading users..." />}
     </div>
   );
