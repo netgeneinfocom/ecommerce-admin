@@ -21,8 +21,8 @@ interface UpdateOrderStatusCardProps {
 
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
     processing: ["confirmed", "cancelled"],
-    confirmed: ["shipping", "cancelled"],
-    shipping: ["delivered", "cancelled"],
+    confirmed: ["shipped", "cancelled"],
+    shipped: ["delivered", "cancelled"],
     delivered: [],
     cancelled: [],
 };

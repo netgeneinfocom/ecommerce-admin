@@ -70,7 +70,7 @@ export interface BestWarehouse {
 export interface Order {
   _id: string;
   customer_id: OrderCustomer;
-  order_status: "processing" | "confirmed" | "shipping" | "delivered" | "cancelled";
+  order_status: "processing" | "confirmed" | "shipped" | "delivered" | "cancelled";
   order_items: OrderItem[];
   shipping_address: ShippingAddress;
   order_id: string;

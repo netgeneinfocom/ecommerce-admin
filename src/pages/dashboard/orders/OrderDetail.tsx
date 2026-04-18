@@ -38,7 +38,7 @@ export default function OrderDetail() {
     const colors: Record<string, string> = {
       processing: "bg-blue-500 hover:bg-blue-500",
       confirmed: "bg-green-500 hover:bg-green-500",
-      shipping: "bg-purple-500 hover:bg-purple-500",
+      shipped: "bg-purple-500 hover:bg-purple-500",
       delivered: "bg-green-600 hover:bg-green-600",
       cancelled: "bg-red-500 hover:bg-red-500",
     };
