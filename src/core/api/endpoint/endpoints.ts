@@ -122,4 +122,5 @@ export const PINCODE_ENDPOINTS = {
   DELETE_AREA: '/api/v1/admin/delete-area',
   UPDATE_AREA: '/api/v1/admin/update-area',
   UPDATE_STATUS: '/api/v1/admin/update-pincode-status',
+  ADD_AREAS: '/api/v1/admin/add-areas-to-pincode',
 } as const;

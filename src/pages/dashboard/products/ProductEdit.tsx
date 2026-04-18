@@ -93,7 +93,7 @@ export default function ProductEdit() {
     subCategory: currentProduct?.product_sub_category || "",
     manufacturer: currentProduct?.manufacturer || "",
     tags: currentProduct?.tags?.map(t => t.tag_name) || [],
-    dimensionId: "", // Will be set after fetching dimensions
+    dimensionId: currentProduct?.dimensions || "", // Initialize with dimensions (could be ID or name)
     price: currentProduct?.product_price || 0,
     discount: currentProduct?.discount_precentage || 0,
     newBadge: currentProduct?.isNew === true || currentProduct?.isNew === "1" || currentProduct?.isNew === "true",
@@ -127,9 +127,12 @@ export default function ProductEdit() {
           }));
           setDimensions(dimensionsList);
 
-          // Find the dimension ID that matches currentProduct.dimensions (which is a string name)
+          // Find the dimension ID that matches currentProduct.dimensions (which could be name or ID)
           if (currentProduct?.dimensions) {
-            const currentDim = dimensionsList.find(d => d.dimension_name === currentProduct.dimensions);
+            const currentDim = dimensionsList.find(d => 
+              d.dimension_name === currentProduct.dimensions || 
+              d._id === currentProduct.dimensions
+            );
             if (currentDim) {
               setFormData(prev => ({ ...prev, dimensionId: currentDim._id }));
             }

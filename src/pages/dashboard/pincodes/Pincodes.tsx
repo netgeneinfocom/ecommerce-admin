@@ -44,6 +44,10 @@ export default function Pincodes() {
         navigate(`${ROUTES.DASHBOARD.PINCODES_EDIT}?id=${pincode._id}`);
     };
 
+    const handleAddArea = (pincode: Pincode) => {
+        navigate(`${ROUTES.DASHBOARD.AREA_ADD}?pincode_id=${pincode._id}`);
+    };
+
     const handleEditArea = (area: Area) => {
         navigate(`${ROUTES.DASHBOARD.AREA_EDIT}?id=${area._id}`);
     };
@@ -136,6 +140,7 @@ export default function Pincodes() {
                         onDelete={handleDelete}
                         onDeleteArea={handleDeleteArea}
                         onEditArea={handleEditArea}
+                        onAddArea={handleAddArea}
                     />
                 </CardContent>
             </Card>

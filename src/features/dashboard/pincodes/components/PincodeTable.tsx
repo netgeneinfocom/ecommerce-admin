@@ -1,7 +1,7 @@
 import { Pincode, Area } from '../types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Trash2, Pencil, X } from "lucide-react";
+import { MapPin, Trash2, Pencil, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PincodeTableProps {
@@ -11,9 +11,10 @@ interface PincodeTableProps {
     onDelete?: (id: string) => void;
     onDeleteArea?: (areaId: string) => void;
     onEditArea?: (area: Area) => void;
+    onAddArea?: (pincode: Pincode) => void;
 }
 
-export function PincodeTable({ pincodes = [], onStatusUpdate, onEdit, onDelete, onDeleteArea, onEditArea }: PincodeTableProps) {
+export function PincodeTable({ pincodes = [], onStatusUpdate, onEdit, onDelete, onDeleteArea, onEditArea, onAddArea }: PincodeTableProps) {
     return (
         <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
             <Table>
@@ -22,13 +23,14 @@ export function PincodeTable({ pincodes = [], onStatusUpdate, onEdit, onDelete, 
                         <TableHead className="w-[120px] font-semibold py-4">PINCODE</TableHead>
                         <TableHead className="font-semibold py-4">SERVABLE AREAS</TableHead>
                         <TableHead className="w-[120px] font-semibold py-4 text-center">STATUS</TableHead>
+                        <TableHead className="w-[120px] font-semibold py-4 text-center">ADD AREA</TableHead>
                         <TableHead className="w-[180px] font-semibold py-4 text-right">ACTIONS</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {pincodes.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={4} className="text-center py-20">
+                            <TableCell colSpan={5} className="text-center py-20">
                                 <div className="flex flex-col items-center justify-center gap-4">
                                     <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
                                         <MapPin className="w-7 h-7 text-muted-foreground/50" />
@@ -54,7 +56,7 @@ export function PincodeTable({ pincodes = [], onStatusUpdate, onEdit, onDelete, 
                                                 <span onClick={() => onEditArea?.(area)} className="cursor-pointer hover:text-primary transition-colors">
                                                     {area.name} ({area.city})
                                                 </span>
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onDeleteArea?.(area._id);
@@ -71,6 +73,17 @@ export function PincodeTable({ pincodes = [], onStatusUpdate, onEdit, onDelete, 
                                     <Badge className={`${pincode.isActive ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'} border-none text-[10px] uppercase font-bold px-2.5 py-0.5`}>
                                         {pincode.isActive ? 'Active' : 'Inactive'}
                                     </Badge>
+                                </TableCell>
+                                <TableCell className="py-4 text-center">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5 h-8 px-2.5 text-[11px] font-bold uppercase transition-all hover:bg-primary hover:text-primary-foreground group"
+                                        onClick={() => onAddArea?.(pincode)}
+                                    >
+                                        <Plus className="w-3.5 h-3.5 transition-transform group-hover:rotate-90" />
+                                        Area
+                                    </Button>
                                 </TableCell>
                                 <TableCell className="py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">

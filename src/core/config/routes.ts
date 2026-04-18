@@ -32,6 +32,7 @@ const Pincodes = lazy(() => import("@/pages/dashboard/pincodes/Pincodes"));
 const PincodeAdd = lazy(() => import("@/pages/dashboard/pincodes/PincodeAdd"));
 const PincodeEdit = lazy(() => import("@/pages/dashboard/pincodes/PincodeEdit"));
 const AreaEdit = lazy(() => import("@/pages/dashboard/pincodes/AreaEdit"));
+const AreaAdd = lazy(() => import("@/pages/dashboard/pincodes/AreaAdd"));
 
 // Route path constants
 export const ROUTES = {
@@ -65,6 +66,7 @@ export const ROUTES = {
     PINCODES_ADD: "/dashboard/pincodes/add",
     PINCODES_EDIT: "/dashboard/pincodes/edit",
     AREA_EDIT: "/dashboard/pincodes/edit-area",
+    AREA_ADD: "/dashboard/pincodes/add-area",
   },
 } as const;
 
@@ -207,6 +209,10 @@ export const routeConfig: RouteConfig[] = [
       {
         path: "pincodes/edit-area",
         element: AreaEdit,
+      },
+      {
+        path: "pincodes/add-area",
+        element: AreaAdd,
       },
     ],
   },

@@ -53,7 +53,7 @@ export default function Orders() {
         return "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20";
       case "confirmed":
         return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
-      case "shipping":
+      case "shipped":
         return "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20";
       case "delivered":
         return "bg-green-500/10 text-green-500 hover:bg-green-500/20";

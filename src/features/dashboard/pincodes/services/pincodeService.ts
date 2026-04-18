@@ -41,5 +41,13 @@ export const pincodeService = {
       data
     );
     return response.data;
+  },
+
+  addAreasToPincode: async (pincodeId: string, areas: any[]): Promise<PincodeResponse> => {
+    const response = await apiClient.patch<PincodeResponse>(
+      `${PINCODE_ENDPOINTS.ADD_AREAS}?pincode_id=${pincodeId}`,
+      { areas }
+    );
+    return response.data;
   }
 };
