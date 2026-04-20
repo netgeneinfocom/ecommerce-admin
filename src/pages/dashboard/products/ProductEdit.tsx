@@ -46,7 +46,7 @@ type ProductFormData = {
   featured: boolean;
   avatar: string;
   avatarFile: File | null;
-  coverImages: string[];
+  coverImages: string[]; // Current cover image URLs (both existing and newly added)
   coverImageFiles: File[];
 };
 
@@ -83,6 +83,11 @@ export default function ProductEdit() {
   const [dimensions, setDimensions] = useState<Dimension[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Track original cover images to detect changes
+  const [originalCoverImages, setOriginalCoverImages] = useState<string[]>(
+    currentProduct?.cover_images?.map(img => img.url) || []
+  );
 
   // Initialize form with current product data from store
   const [formData, setFormData] = useState<ProductFormData>({
@@ -202,6 +207,23 @@ export default function ProductEdit() {
       formData.tags.forEach((tag) => {
         apiFormData.append('tags', tag);
       });
+
+      // Check if there are image changes (deletions, additions, or reordering)
+      const hasImageChanges = 
+        formData.coverImages.length !== originalCoverImages.length ||
+        formData.coverImageFiles.length > 0 ||
+        formData.coverImages.some((url, idx) => url !== originalCoverImages[idx]);
+
+      // Only send existing_cover_images if there are changes
+      // This tells the backend which images to keep; omitted ones will be deleted
+      if (hasImageChanges) {
+        formData.coverImages.forEach((url) => {
+          // Only append URLs that aren't new (already existed on the server)
+          if (originalCoverImages.includes(url)) {
+            apiFormData.append('existing_cover_images', url);
+          }
+        });
+      }
 
       // Append new cover images if any were selected
       formData.coverImageFiles.forEach((file) => {
