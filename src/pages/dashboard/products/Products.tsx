@@ -24,6 +24,7 @@ export default function Products() {
   const [subcategories, setSubcategories] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -37,13 +38,14 @@ export default function Products() {
       try {
         setIsLoading(true);
         const [productsRes, brandsRes, categoriesRes, subcategoriesRes] = await Promise.all([
-          productService.listProducts(),
+          productService.listProducts(currentPage, itemsPerPage),
           brandService.listBrands(),
           categoryService.listCategories(),
           subcategoryService.listSubcategories(),
         ]);
 
         setProducts(productsRes?.products || []);
+        setTotalPages(productsRes?.pagination?.totalPages || 1);
 
         // Create lookup maps for quick access
         const brandsMap = new Map((brandsRes?.data || []).map(b => [b.brand_id, b.brand_name]));
@@ -65,16 +67,12 @@ export default function Products() {
     };
 
     fetchData();
-  }, [toast]);
+  }, [currentPage, toast]);
 
   const filteredProducts = (products || []).filter((product) =>
     product.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
   const handleDeleteProduct = (id: string) => {
     setProductToDelete(id);
@@ -148,9 +146,9 @@ export default function Products() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
+        <CardContent className="overflow-x-auto p-0">
+          <div className="min-w-full inline-block align-middle">
+            <Table className="w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
@@ -172,14 +170,14 @@ export default function Products() {
                       Loading products...
                     </TableCell>
                   </TableRow>
-                ) : paginatedProducts.length === 0 ? (
+                ) : filteredProducts.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                       No products found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedProducts.map((product) => (
+                  filteredProducts.map((product) => (
                     <TableRow key={product._id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
