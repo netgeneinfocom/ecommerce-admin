@@ -56,9 +56,17 @@ export interface ProductResponse {
   product: Product;
 }
 
+export interface Pagination {
+  currentPage: number;
+  limit: number;
+  totalProducts: number;
+  totalPages: number;
+}
+
 export interface ProductsListResponse {
   success: boolean;
   message: string;
+  pagination: Pagination;
   products: Product[];
 }
 
@@ -99,9 +107,9 @@ export const productService = {
     return response.data;
   },
 
-  listProducts: async (): Promise<ProductsListResponse> => {
+  listProducts: async (page: number = 1, value: number = 10): Promise<ProductsListResponse> => {
     const response = await apiClient.get<ProductsListResponse>(
-      PRODUCT_ENDPOINTS.LIST
+      `${PRODUCT_ENDPOINTS.LIST}?page=${page}&value=${value}`
     );
     return response.data;
   },
