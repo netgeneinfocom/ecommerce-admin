@@ -15,7 +15,7 @@ export const AuthCard = ({
   title
 }: AuthCardProps) => {
   const location = useLocation();
-  const isLogin = location.pathname === ROUTES.LOGIN;
+  const isLogin = location.pathname === ROUTES.LOGIN || location.pathname === ROUTES.HOME;
   return <div className="min-h-screen flex items-center justify-center p-4" style={{
     background: 'var(--gradient-auth)'
   }}>
