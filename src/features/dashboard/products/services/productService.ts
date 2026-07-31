@@ -42,6 +42,12 @@ export interface Product {
   featured: string | boolean;
   isNew: string | boolean;
   tags: ProductTag[];
+  return_policy?: {
+    value: number;
+    unit: string;
+    duration_in_hours: number;
+    policy_notes: string;
+  };
   created_by: string;
   product_reviews: any[];
   product_likes: any[];

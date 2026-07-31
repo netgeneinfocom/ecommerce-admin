@@ -216,7 +216,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order, variant = 'li
                         <div className="max-w-xs">
                             <p className="text-[10px] font-black uppercase text-[#9ca3af] tracking-widest mb-3">Notes & Instructions</p>
                             <p className="text-[10px] text-[#6b7280] leading-normal italic bg-[#f9fafb] p-4 rounded-xl border border-[#f3f4f6]">
-                                Thank you for your purchase. Please note that items can be returned within 15 days of delivery provided they are in original condition. Keep this invoice for warranty purposes.
+                                Thank you for your purchase. Please keep this invoice for future reference and warranty purposes.
                             </p>
                         </div>
                         <div className="w-full md:w-[300px] space-y-4">

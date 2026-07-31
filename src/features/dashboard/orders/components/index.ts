@@ -4,4 +4,5 @@ export { OrderItemsCard } from "./OrderItemsCard";
 export { PriceSummaryCard } from "./PriceSummaryCard";
 export { UpdateOrderStatusCard } from "./UpdateOrderStatusCard";
 export { WarehouseInformationCard } from "./WarehouseInformationCard";
+export { ReturnInformationCard } from "./ReturnInformationCard";
 export { OrderInvoice } from "./OrderInvoice";

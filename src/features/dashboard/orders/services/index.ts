@@ -19,4 +19,11 @@ export const orderService = {
         );
         return response.data;
     },
+    updateReturnStatus: async (returnId: string, status: "returned") => {
+        const response = await apiClient.post<{ success: boolean; message: string }>(
+            `${ORDER_ENDPOINTS.UPDATE_RETURN_STATUS}?return_id=${returnId}`,
+            { status }
+        );
+        return response.data;
+    },
 };
