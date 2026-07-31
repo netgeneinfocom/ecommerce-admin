@@ -15,4 +15,7 @@ export interface ProductFormData {
   sales: boolean;
   featured: boolean;
   status: "active" | "inactive" | "draft";
+  return_policy_value: number;
+  return_policy_unit: string;
+  return_policy_notes: string;
 }

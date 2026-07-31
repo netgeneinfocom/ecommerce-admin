@@ -31,6 +31,13 @@ export interface OrderItem {
   product_brand: string;
   product_dimension: string;
   no_of_products: number;
+  return_status?: "pending" | "approved" | "rejected" | "returned" | "completed";
+  return_info?: {
+    return_id: string;
+    status: string;
+    reason: string;
+    requested_at: string;
+  };
   _id: string;
 }
 

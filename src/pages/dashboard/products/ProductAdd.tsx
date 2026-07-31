@@ -47,6 +47,9 @@ type ProductFormData = {
   avatarFile: File | null;
   coverImages: string[];
   coverImageFiles: File[];
+  return_policy_value: number;
+  return_policy_unit: string;
+  return_policy_notes: string;
 };
 
 type Brand = {
@@ -98,6 +101,9 @@ export default function ProductAdd() {
     avatarFile: null,
     coverImages: [],
     coverImageFiles: [],
+    return_policy_value: 0,
+    return_policy_unit: "hours",
+    return_policy_notes: "",
   });
 
   useEffect(() => {
@@ -191,6 +197,11 @@ export default function ProductAdd() {
       apiFormData.append('manufacturer', formData.manufacturer);
       apiFormData.append('isNew', formData.newBadge ? "1" : "0");
       apiFormData.append('avatar', formData.avatarFile);
+
+      // Return Policy
+      apiFormData.append('return_policy_value', formData.return_policy_value.toString());
+      apiFormData.append('return_policy_unit', formData.return_policy_unit);
+      apiFormData.append('return_policy_notes', formData.return_policy_notes);
 
       // Append tags individually
       formData.tags.forEach((tag) => {
@@ -381,6 +392,51 @@ export default function ProductAdd() {
                 </Select>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Return Policy</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="return_policy_value">Duration Value</Label>
+                <Input
+                  id="return_policy_value"
+                  type="number"
+                  placeholder="e.g. 24, 48, 7"
+                  value={formData.return_policy_value}
+                  onChange={(e) => setFormData({ ...formData, return_policy_value: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="return_policy_unit">Duration Unit</Label>
+                <Select
+                  value={formData.return_policy_unit}
+                  onValueChange={(value) => setFormData({ ...formData, return_policy_unit: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hours">Hours</SelectItem>
+                    <SelectItem value="days">Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="return_policy_notes">Policy Notes</Label>
+              <Input
+                id="return_policy_notes"
+                placeholder="e.g. Defective product replacement only"
+                value={formData.return_policy_notes}
+                onChange={(e) => setFormData({ ...formData, return_policy_notes: e.target.value })}
+              />
+            </div>
           </CardContent>
         </Card>
 

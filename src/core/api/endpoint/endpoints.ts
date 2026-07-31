@@ -71,6 +71,7 @@ export const ORDER_ENDPOINTS = {
   LIST: '/api/v1/admin/orders',
   UPDATE_STATUS: '/api/v1/admin/order-status',
   CONFIRM_ORDER: '/api/v1/admin/confirm-order',
+  UPDATE_RETURN_STATUS: '/api/v1/admin/update-return-status',
 } as const;
 
 // Dashboard API endpoints
