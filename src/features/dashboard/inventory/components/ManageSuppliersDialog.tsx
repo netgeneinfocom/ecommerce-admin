@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Loader2, Trash2 } from "lucide-react";
+import { Users, Plus, Loader2, Trash2, Search, X } from "lucide-react";
 import { inventoryService } from "../services/inventoryService";
 import { useToast } from "@/core/hooks/use-toast";
 import { AddSupplierParams, Supplier } from "../types";
@@ -15,6 +15,7 @@ export function ManageSuppliersDialog() {
     const [isAdding, setIsAdding] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
     const [formData, setFormData] = useState<AddSupplierParams>({
         name: "",
         email: "",
@@ -113,6 +114,16 @@ export function ManageSuppliersDialog() {
         }
     };
 
+    const filteredSuppliers = suppliers.filter((supplier) => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return true;
+        return (
+            supplier.name.toLowerCase().includes(query) ||
+            (supplier.email && supplier.email.toLowerCase().includes(query)) ||
+            (supplier.phone && supplier.phone.toLowerCase().includes(query))
+        );
+    });
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -181,18 +192,40 @@ export function ManageSuppliersDialog() {
                     </div>
 
                     <div className="mt-8 space-y-4">
-                        <h3 className="text-sm font-medium text-muted-foreground uppercase">Current Suppliers</h3>
+                        <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-sm font-medium text-muted-foreground uppercase shrink-0">Current Suppliers</h3>
+                            <div className="relative flex-1 max-w-[180px]">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search suppliers..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-8 pr-7 h-8 text-xs bg-background"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery("")}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-sm"
+                                        aria-label="Clear search"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2">
                             {isLoading ? (
                                 <div className="flex justify-center py-4">
                                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
                                 </div>
-                            ) : (
-                                suppliers.map((supplier) => (
+                            ) : filteredSuppliers.length > 0 ? (
+                                filteredSuppliers.map((supplier) => (
                                     <div key={supplier._id} className="flex items-center justify-between p-3 rounded-lg border bg-background hover:bg-accent/50 transition-colors">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium">{supplier.name}</span>
-                                            <span className="text-xs text-muted-foreground">{supplier.email}</span>
+                                            {supplier.email && <span className="text-xs text-muted-foreground">{supplier.email}</span>}
                                         </div>
                                         <Button
                                             variant="ghost"
@@ -204,6 +237,14 @@ export function ManageSuppliersDialog() {
                                         </Button>
                                     </div>
                                 ))
+                            ) : searchQuery ? (
+                                <div className="text-center py-8 text-sm text-muted-foreground">
+                                    No suppliers found matching "{searchQuery}"
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-sm text-muted-foreground">
+                                    No suppliers added yet.
+                                </div>
                             )}
                         </div>
                     </div>

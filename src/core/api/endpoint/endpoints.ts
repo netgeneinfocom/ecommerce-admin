@@ -46,6 +46,7 @@ export const USER_ENDPOINTS = {
 export const PRODUCT_ENDPOINTS = {
   CREATE: '/api/v1/admin/add-product',
   LIST: '/api/v1/admin/products',
+  SEARCH: '/api/v1/admin/products/search',
   UPDATE: '/api/v1/admin/update-product',
   DELETE: '/api/v1/admin/product',
 } as const;
@@ -60,6 +61,7 @@ export const METRICS_ENDPOINTS = {
 // Inventory API endpoints
 export const INVENTORY_ENDPOINTS = {
   LIST: '/api/v1/admin/inventory',
+  SEARCH: '/api/v1/admin/inventory/search',
   ADD_BILL: '/api/v1/admin/add-inventory-bill',
   BILL_LIST: '/api/v1/admin/inventory-bills',
   BILL_BY_ID: '/api/v1/admin/inventory-bill-by-id',

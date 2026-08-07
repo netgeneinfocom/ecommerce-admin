@@ -9,3 +9,4 @@ export { DashboardHeader } from "./DashboardHeader";
 export { LogoutConfirmDialog } from "./LogoutConfirmDialog";
 export { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 export { RichTextEditor } from "./RichTextEditor";
+export { SearchableSelect } from "./SearchableSelect";

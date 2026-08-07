@@ -1,6 +1,20 @@
-import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Trash2, Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
 import {
     Select,
     SelectContent,
@@ -28,8 +42,11 @@ export function InventoryItemRow({
     onUpdate,
     onRemove,
 }: InventoryItemRowProps) {
+    const [open, setOpen] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
 
     const lineTotal = item.quantity * item.price;
+    const selectedItem = inventoryItems.find((inv) => inv._id === item.productId);
 
     return (
         <tr className={cn(
@@ -45,30 +62,62 @@ export function InventoryItemRow({
 
             {/* Product */}
             <td className="px-4 py-3">
-                <Select
-                    value={item.productId}
-                    onValueChange={(value) => {
-                        onUpdate(item.id, {
-                            productId: value,
-                        });
-                    }}
-                >
-                    <SelectTrigger className="w-full bg-background">
-                        <SelectValue placeholder="Select inventory item" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover z-50">
-                        {inventoryItems.map((invItem) => (
-                            <SelectItem key={invItem._id} value={invItem._id}>
-                                <div className="flex flex-col text-left">
-                                    <span className="font-medium">{invItem.product_name}</span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {invItem.dimension_name} • {invItem.product_code}
-                                    </span>
-                                </div>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className={cn(
+                                "w-full justify-between font-normal h-10 px-3 py-2 border-input transition-colors",
+                                selectedItem ? "bg-primary text-white hover:bg-primary/90 hover:text-white" : "bg-background"
+                            )}
+                        >
+                            {selectedItem ? (
+                                <span className="font-medium truncate text-white">{selectedItem.product_name}</span>
+                            ) : (
+                                <span className="text-muted-foreground">Select inventory item</span>
+                            )}
+                            <ChevronsUpDown className={cn("ml-2 h-4 w-4 shrink-0", selectedItem ? "text-white opacity-90" : "opacity-50")} />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[320px] p-0 z-50 bg-popover" align="start">
+                        <Command>
+                            <CommandInput
+                                placeholder="Search by product name..."
+                                value={searchValue}
+                                onValueChange={setSearchValue}
+                                onClear={() => setSearchValue("")}
+                            />
+                            <CommandList className="max-h-[240px]">
+                                <CommandEmpty>No product found.</CommandEmpty>
+                                <CommandGroup>
+                                    {inventoryItems.map((invItem) => (
+                                        <CommandItem
+                                            key={invItem._id}
+                                            value={`${invItem.product_name} ${invItem.dimension_name || ''} ${invItem.product_code || ''}`}
+                                            onSelect={() => {
+                                                onUpdate(item.id, {
+                                                    productId: invItem._id,
+                                                });
+                                                setOpen(false);
+                                            }}
+                                            className="cursor-pointer py-2 data-[selected='true']:bg-primary data-[selected='true']:text-white group"
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4 shrink-0",
+                                                    item.productId === invItem._id ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            <span className="font-medium text-foreground group-data-[selected='true']:text-white">{invItem.product_name}</span>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </td>
 
 

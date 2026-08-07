@@ -131,3 +131,14 @@ export interface InventoryBillDetailResponse {
     success: boolean;
     data: InventoryBillDetail;
 }
+
+export interface InventorySearchResponse {
+    success: boolean;
+    message: string;
+    search_query: string;
+    currentPage: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    data: InventoryItem[];
+}

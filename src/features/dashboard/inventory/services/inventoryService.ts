@@ -8,6 +8,7 @@ import {
     GetSuppliersResponse,
     InventoryBillResponse,
     InventoryBillDetailResponse,
+    InventorySearchResponse,
 } from '../types';
 
 export const inventoryService = {
@@ -15,6 +16,13 @@ export const inventoryService = {
         const response = await apiClient.get<InventoryListResponse>(
             INVENTORY_ENDPOINTS.LIST,
             { params }
+        );
+        return response.data;
+    },
+
+    searchInventory: async (name: string, page: number = 1, limit: number = 10): Promise<InventorySearchResponse> => {
+        const response = await apiClient.get<InventorySearchResponse>(
+            `${INVENTORY_ENDPOINTS.SEARCH}?name=${encodeURIComponent(name)}&page=${page}&limit=${limit}`
         );
         return response.data;
     },
