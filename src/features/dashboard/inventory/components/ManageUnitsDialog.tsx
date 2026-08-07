@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Tag, Plus, Loader2, Trash2 } from "lucide-react";
+import { Tag, Plus, Loader2, Trash2, Search, X } from "lucide-react";
 import { dimensionService } from "../services";
 import { useToast } from "@/core/hooks/use-toast";
 import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
@@ -21,6 +21,7 @@ export function ManageUnitsDialog({ onUnitsChange }: ManageUnitsDialogProps) {
     const [open, setOpen] = useState(false);
     const [metrics, setMetrics] = useState<Metric[]>([]);
     const [newUnit, setNewUnit] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
     const [isAddingUnit, setIsAddingUnit] = useState(false);
     const [isLoadingUnits, setIsLoadingUnits] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -143,6 +144,10 @@ export function ManageUnitsDialog({ onUnitsChange }: ManageUnitsDialogProps) {
         setOpen(false);
     };
 
+    const filteredMetrics = metrics.filter((metric) =>
+        metric.dimension_name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    );
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -186,17 +191,39 @@ export function ManageUnitsDialog({ onUnitsChange }: ManageUnitsDialogProps) {
                     </div>
 
                     {/* Available Dimensions */}
-                    <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-muted-foreground uppercase">
-                            Available Dimensions
-                        </h4>
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-sm font-medium text-muted-foreground uppercase shrink-0">
+                                Available Dimensions
+                            </h4>
+                            <div className="relative flex-1 max-w-[180px]">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search units..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-8 pr-7 h-8 text-xs bg-background"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery("")}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-sm"
+                                        aria-label="Clear search"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
                             {isLoadingUnits ? (
                                 <div className="flex items-center justify-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                                 </div>
-                            ) : metrics.length > 0 ? (
-                                metrics.map((metric) => (
+                            ) : filteredMetrics.length > 0 ? (
+                                filteredMetrics.map((metric) => (
                                     <div
                                         key={metric._id}
                                         className="flex items-center justify-between p-3 rounded-lg border bg-background hover:bg-accent/50 transition-colors"
@@ -212,6 +239,10 @@ export function ManageUnitsDialog({ onUnitsChange }: ManageUnitsDialogProps) {
                                         </Button>
                                     </div>
                                 ))
+                            ) : searchQuery ? (
+                                <div className="text-center py-8 text-sm text-muted-foreground">
+                                    No units found matching "{searchQuery}"
+                                </div>
                             ) : (
                                 <div className="text-center py-8 text-sm text-muted-foreground">
                                     No units added yet. Add your first unit above.

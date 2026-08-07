@@ -12,7 +12,8 @@ import {
   ImageUploadMultiple,
   FormActions,
   TagInput,
-  RichTextEditor
+  RichTextEditor,
+  SearchableSelect
 } from "@/components/shared";
 import { Loader } from "@/components/loader/Loader";
 import {
@@ -73,6 +74,13 @@ type Subcategory = {
   parent_category?: string;
 };
 
+const extractId = (val: any): string => {
+  if (!val) return "";
+  if (typeof val === "object" && val._id) return val._id;
+  if (typeof val === "string") return val;
+  return "";
+};
+
 export default function ProductEdit() {
   const navigate = useNavigate();
   const { productId } = useParams();
@@ -96,9 +104,9 @@ export default function ProductEdit() {
   const [formData, setFormData] = useState<ProductFormData>({
     name: currentProduct?.product_name || "",
     description: currentProduct?.product_description || "",
-    brand: currentProduct?.product_brand || "",
-    category: currentProduct?.product_category || "",
-    subCategory: currentProduct?.product_sub_category || "",
+    brand: extractId(currentProduct?.product_brand),
+    category: extractId(currentProduct?.product_category),
+    subCategory: extractId(currentProduct?.product_sub_category),
     manufacturer: currentProduct?.manufacturer || "",
     tags: currentProduct?.tags?.map(t => t.tag_name) || [],
     dimensionId: currentProduct?.dimensions || "", // Initialize with dimensions (could be ID or name)
@@ -325,65 +333,41 @@ export default function ProductEdit() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="brand">Brand *</Label>
-                <Select
+                <SearchableSelect
+                  options={brands.map((b) => ({ value: b.brand_id, label: b.brand_name }))}
                   value={formData.brand}
                   onValueChange={(value) => setFormData({ ...formData, brand: value })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select brand" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand.brand_id} value={brand.brand_id}>
-                        {brand.brand_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select brand"
+                  searchPlaceholder="Search brand..."
+                  emptyText="No brand found."
+                />
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
-                <Select
+                <SearchableSelect
+                  options={categories.map((c) => ({ value: c.category_id, label: c.category_name }))}
                   value={formData.category}
                   onValueChange={(value) => setFormData({ ...formData, category: value, subCategory: "" })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.category_id} value={cat.category_id}>
-                        {cat.category_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select category"
+                  searchPlaceholder="Search category..."
+                  emptyText="No category found."
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="subCategory">Sub Category *</Label>
-                <Select
+                <SearchableSelect
+                  options={availableSubCategories.map((s) => ({ value: s.sub_category_id, label: s.sub_category_name }))}
                   value={formData.subCategory}
                   onValueChange={(value) => setFormData({ ...formData, subCategory: value })}
                   disabled={!formData.category}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={formData.category ? "Select sub category" : "Select category first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableSubCategories.map((subCat) => (
-                      <SelectItem key={subCat.sub_category_id} value={subCat.sub_category_id}>
-                        {subCat.sub_category_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder={formData.category ? "Select sub category" : "Select category first"}
+                  searchPlaceholder="Search sub category..."
+                  emptyText="No sub category found."
+                />
               </div>
             </div>
 
@@ -436,21 +420,14 @@ export default function ProductEdit() {
             ) : (
               <div className="space-y-2">
                 <Label htmlFor="dimensionId">Dimension Type *</Label>
-                <Select
+                <SearchableSelect
+                  options={dimensions.map((d) => ({ value: d._id, label: d.dimension_name }))}
                   value={formData.dimensionId}
                   onValueChange={(value) => setFormData({ ...formData, dimensionId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select dimension" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dimensions.map((dim) => (
-                      <SelectItem key={dim._id} value={dim._id}>
-                        {dim.dimension_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select dimension"
+                  searchPlaceholder="Search dimension..."
+                  emptyText="No dimension found."
+                />
               </div>
             )}
           </CardContent>

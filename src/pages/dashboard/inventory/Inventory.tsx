@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Pencil } from "lucide-react";
+import { Search, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Pagination,
@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function Inventory() {
     const { toast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [stockFilter, setStockFilter] = useState<string>("all");
     const [availableUnits, setAvailableUnits] = useState<string[]>([]);
@@ -34,21 +35,39 @@ export default function Inventory() {
     const [isEditOpen, setIsEditOpen] = useState(false);
 
     useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 350);
+
+        return () => clearTimeout(handler);
+    }, [searchQuery]);
+
+    useEffect(() => {
         if (activeTab === "show-inventory") {
             fetchInventory();
         }
-    }, [currentPage, activeTab]);
+    }, [currentPage, activeTab, debouncedSearchQuery]);
 
     const fetchInventory = async () => {
         try {
             setIsLoading(true);
-            const response = await inventoryService.listInventory({
-                page: currentPage,
-                limit: 5,
-            });
-            if (response.success) {
-                setInventoryItems(response.data);
-                setTotalPages(response.totalPages);
+            const queryTrimmed = debouncedSearchQuery.trim();
+
+            if (queryTrimmed) {
+                const searchRes = await inventoryService.searchInventory(queryTrimmed, currentPage, 5);
+                if (searchRes.success) {
+                    setInventoryItems(searchRes.data || []);
+                    setTotalPages(searchRes.totalPages || 1);
+                }
+            } else {
+                const response = await inventoryService.listInventory({
+                    page: currentPage,
+                    limit: 5,
+                });
+                if (response.success) {
+                    setInventoryItems(response.data || []);
+                    setTotalPages(response.totalPages || 1);
+                }
             }
         } catch (error: any) {
             console.error("Error fetching inventory:", error);
@@ -62,6 +81,16 @@ export default function Inventory() {
         }
     };
 
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery("");
+        setCurrentPage(1);
+    };
+
     const getStockStatusKey = (status: string): "in_stock" | "low_stock" | "out_of_stock" => {
         const normalizedStatus = status.toLowerCase().replace(/\s+/g, '_');
         if (normalizedStatus.includes('out')) return 'out_of_stock';
@@ -70,16 +99,13 @@ export default function Inventory() {
     };
 
     const filteredItems = inventoryItems.filter(item => {
-        const matchesSearch = item.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.product_code.toLowerCase().includes(searchQuery.toLowerCase());
-
         const stockStatusKey = getStockStatusKey(item.stock_status);
         const matchesStockFilter = stockFilter === "all" ||
             (stockFilter === "in_stock" && stockStatusKey === "in_stock") ||
             (stockFilter === "low_stock" && stockStatusKey === "low_stock") ||
             (stockFilter === "out_of_stock" && stockStatusKey === "out_of_stock");
 
-        return matchesSearch && matchesStockFilter;
+        return matchesStockFilter;
     });
 
     return (
@@ -144,10 +170,20 @@ export default function Inventory() {
                                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             placeholder="Search products..."
-                                            className="pl-10"
+                                            className="pl-10 pr-10"
                                             value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            onChange={handleSearchChange}
                                         />
+                                        {searchQuery && (
+                                            <button
+                                                type="button"
+                                                onClick={handleClearSearch}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-sm focus:outline-none"
+                                                aria-label="Clear search"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

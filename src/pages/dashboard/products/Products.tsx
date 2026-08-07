@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Package } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Package, X } from "lucide-react";
 import { useToast } from "@/core/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
@@ -23,6 +23,7 @@ export default function Products() {
   const [categories, setCategories] = useState<Map<string, string>>(new Map());
   const [subcategories, setSubcategories] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,27 +35,45 @@ export default function Products() {
   const { setCurrentProduct } = useProductStore();
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 350);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+
+        const queryTrimmed = debouncedSearchQuery.trim();
+        const productsPromise = queryTrimmed
+          ? productService.searchProducts(queryTrimmed, currentPage, itemsPerPage)
+          : productService.listProducts(currentPage, itemsPerPage);
+
         const [productsRes, brandsRes, categoriesRes, subcategoriesRes] = await Promise.all([
-          productService.listProducts(currentPage, itemsPerPage),
-          brandService.listBrands(),
-          categoryService.listCategories(),
-          subcategoryService.listSubcategories(),
+          productsPromise,
+          brands.size === 0 ? brandService.listBrands() : Promise.resolve(null),
+          categories.size === 0 ? categoryService.listCategories() : Promise.resolve(null),
+          subcategories.size === 0 ? subcategoryService.listSubcategories() : Promise.resolve(null),
         ]);
 
         setProducts(productsRes?.products || []);
         setTotalPages(productsRes?.pagination?.totalPages || 1);
 
-        // Create lookup maps for quick access
-        const brandsMap = new Map((brandsRes?.data || []).map(b => [b.brand_id, b.brand_name]));
-        const categoriesMap = new Map((categoriesRes?.catgoryProducts || []).map(c => [c.category_id, c.category_name]));
-        const subcategoriesMap = new Map((subcategoriesRes?.data || []).map(s => [s.sub_category_id, s.sub_category_name]));
-
-        setBrands(brandsMap);
-        setCategories(categoriesMap);
-        setSubcategories(subcategoriesMap);
+        if (brandsRes?.data) {
+          const brandsMap = new Map<string, string>((brandsRes.data || []).map(b => [b.brand_id, b.brand_name]));
+          setBrands(brandsMap);
+        }
+        if (categoriesRes?.catgoryProducts) {
+          const categoriesMap = new Map<string, string>((categoriesRes.catgoryProducts || []).map(c => [c.category_id, c.category_name]));
+          setCategories(categoriesMap);
+        }
+        if (subcategoriesRes?.data) {
+          const subcategoriesMap = new Map<string, string>((subcategoriesRes.data || []).map(s => [s.sub_category_id, s.sub_category_name]));
+          setSubcategories(subcategoriesMap);
+        }
       } catch (error) {
         toast({
           title: "Error",
@@ -67,12 +86,38 @@ export default function Products() {
     };
 
     fetchData();
-  }, [currentPage, toast]);
+  }, [currentPage, debouncedSearchQuery, toast]);
 
-  const filteredProducts = (products || []).filter((product) =>
-    product.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setCurrentPage(1);
+  };
+
+  const getBrandName = (brand: Product['product_brand']) => {
+    if (!brand) return "-";
+    if (typeof brand === 'object' && brand.brand_name) return brand.brand_name;
+    if (typeof brand === 'string') return brands.get(brand) || "-";
+    return "-";
+  };
+
+  const getCategoryName = (category: Product['product_category']) => {
+    if (!category) return "-";
+    if (typeof category === 'object' && category.category_name) return category.category_name;
+    if (typeof category === 'string') return categories.get(category) || "-";
+    return "-";
+  };
+
+  const getSubCategoryName = (subCategory: Product['product_sub_category']) => {
+    if (!subCategory) return "-";
+    if (typeof subCategory === 'object' && subCategory.sub_category_name) return subCategory.sub_category_name;
+    if (typeof subCategory === 'string') return subcategories.get(subCategory) || "-";
+    return "-";
+  };
 
   const handleDeleteProduct = (id: string) => {
     setProductToDelete(id);
@@ -139,10 +184,20 @@ export default function Products() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
-                className="pl-10"
+                className="pl-10 pr-10"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-sm focus:outline-none"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -170,14 +225,14 @@ export default function Products() {
                       Loading products...
                     </TableCell>
                   </TableRow>
-                ) : filteredProducts.length === 0 ? (
+                ) : products.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                       No products found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredProducts.map((product) => (
+                  products.map((product) => (
                     <TableRow key={product._id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -190,9 +245,9 @@ export default function Products() {
                           <span className="font-medium">{product.product_name}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{brands.get(product.product_brand) || "-"}</TableCell>
-                      <TableCell>{categories.get(product.product_category) || "-"}</TableCell>
-                      <TableCell>{subcategories.get(product.product_sub_category) || "-"}</TableCell>
+                      <TableCell>{getBrandName(product.product_brand)}</TableCell>
+                      <TableCell>{getCategoryName(product.product_category)}</TableCell>
+                      <TableCell>{getSubCategoryName(product.product_sub_category)}</TableCell>
                       <TableCell>{product.manufacturer || "-"}</TableCell>
                       <TableCell>₹{product.product_price.toFixed(2)}</TableCell>
                       <TableCell className="text-red-600 font-medium">{product.discount_precentage}%</TableCell>

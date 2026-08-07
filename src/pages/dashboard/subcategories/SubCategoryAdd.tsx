@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/core/hooks/use-toast";
-import { FormPageHeader, ImageUploadSingle, FormActions } from "@/components/shared";
+import { FormPageHeader, ImageUploadSingle, FormActions, SearchableSelect } from "@/components/shared";
 import { ROUTES } from "@/core/config/routes";
 import { subcategoryService } from "@/features/dashboard/subcategories/services";
 import { categoryService } from "@/features/dashboard/categories/services";
@@ -137,22 +137,15 @@ export default function SubCategoryAdd() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <Select
+              <SearchableSelect
+                options={categories.map((category) => ({ value: category.category_id, label: category.category_name }))}
                 value={formData.category}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                 disabled={isLoadingCategories}
-              >
-                <SelectTrigger id="category">
-                  <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select category"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.category_id} value={category.category_id}>
-                      {category.category_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder={isLoadingCategories ? "Loading categories..." : "Select category"}
+                searchPlaceholder="Search category..."
+                emptyText="No category found."
+              />
             </div>
           </CardContent>
         </Card>
