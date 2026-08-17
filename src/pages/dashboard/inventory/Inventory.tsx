@@ -15,7 +15,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Loader } from "@/components/loader/Loader";
-import { ManageUnitsDialog, inventoryService, AddInventory, ManageSuppliersDialog, EditInventoryDialog } from "@/features/dashboard/inventory";
+import { ManageUnitsDialog, inventoryService, AddInventory, ManageSuppliersDialog, EditInventoryDialog, useInventoryStore } from "@/features/dashboard/inventory";
 import { InventoryItem } from "@/features/dashboard/inventory/types";
 import { useToast } from "@/core/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,12 +24,13 @@ export default function Inventory() {
     const { toast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-    const [isLoading, setIsLoading] = useState(true);
+    const { inventoryItems, totalPages: storedTotalPages, setInventoryItems } = useInventoryStore();
+    const [isLoading, setIsLoading] = useState(inventoryItems.length === 0);
     const [stockFilter, setStockFilter] = useState<string>("all");
     const [availableUnits, setAvailableUnits] = useState<string[]>([]);
-    const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const totalPages = storedTotalPages || 1;
+    const itemsPerPage = 10;
     const [activeTab, setActiveTab] = useState("show-inventory");
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -50,23 +51,23 @@ export default function Inventory() {
 
     const fetchInventory = async () => {
         try {
-            setIsLoading(true);
+            if (inventoryItems.length === 0) {
+                setIsLoading(true);
+            }
             const queryTrimmed = debouncedSearchQuery.trim();
 
             if (queryTrimmed) {
-                const searchRes = await inventoryService.searchInventory(queryTrimmed, currentPage, 5);
+                const searchRes = await inventoryService.searchInventory(queryTrimmed, currentPage, itemsPerPage);
                 if (searchRes.success) {
-                    setInventoryItems(searchRes.data || []);
-                    setTotalPages(searchRes.totalPages || 1);
+                    setInventoryItems(searchRes.data || [], searchRes.totalPages || 1, currentPage);
                 }
             } else {
                 const response = await inventoryService.listInventory({
                     page: currentPage,
-                    limit: 5,
+                    limit: itemsPerPage,
                 });
                 if (response.success) {
-                    setInventoryItems(response.data || []);
-                    setTotalPages(response.totalPages || 1);
+                    setInventoryItems(response.data || [], response.totalPages || 1, currentPage);
                 }
             }
         } catch (error: any) {

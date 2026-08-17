@@ -85,6 +85,8 @@ export interface Order {
   updatedAt: string;
   total_amount: number;
   best_warehouse?: BestWarehouse;
+  has_return?: boolean;
+  invoice_url?: string;
   __v: number;
 }
 

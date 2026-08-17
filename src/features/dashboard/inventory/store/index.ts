@@ -1,2 +1,1 @@
-// Inventory-specific state management will go here
-// Example: inventory store, inventory actions, inventory selectors
+export { useInventoryStore } from "./inventory.store";

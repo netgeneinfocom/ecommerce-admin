@@ -11,32 +11,32 @@ import { ROUTES } from "@/core/config/routes";
 import { Loader } from "@/components/loader/Loader";
 import { orderService } from "@/features/dashboard/orders/services";
 import { Order, OrderStatus } from "@/features/dashboard/orders/types";
-import { OrderInvoice } from "@/features/dashboard/orders";
+import { OrderInvoice, useOrderStore } from "@/features/dashboard/orders";
 
 export default function Orders() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
+  const { orders, totalPages: storedTotalPages, setOrders, setCurrentOrder } = useOrderStore();
+  const [isLoading, setIsLoading] = useState(orders.length === 0);
+  const totalPages = storedTotalPages || 1;
   const itemsPerPage = 10;
 
   const loadOrders = useCallback(async (page: number) => {
     try {
-      setIsLoading(true);
+      if (orders.length === 0) {
+        setIsLoading(true);
+      }
       const data = await orderService.fetchOrders(page, itemsPerPage);
       if (data.success) {
-        setOrders(data.orders);
-        setTotalPages(data.pagination.totalPages);
-        setCurrentPage(data.pagination.currentPage);
+        setOrders(data.orders, data.pagination.totalPages, data.pagination.currentPage);
       }
     } catch (error) {
       console.error("Failed to fetch orders:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [itemsPerPage]);
+  }, [itemsPerPage, orders.length, setOrders]);
 
   useEffect(() => {
     loadOrders(currentPage);
@@ -130,7 +130,10 @@ export default function Orders() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => navigate(ROUTES.DASHBOARD.ORDER_DETAIL(order._id))}
+                          onClick={() => {
+                            setCurrentOrder(order);
+                            navigate(ROUTES.DASHBOARD.ORDER_DETAIL(order._id));
+                          }}
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           View Order
