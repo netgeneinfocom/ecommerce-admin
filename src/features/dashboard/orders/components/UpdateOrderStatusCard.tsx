@@ -13,6 +13,7 @@ import { RefreshCcw, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "@/core/hooks/use-toast";
 import { orderService } from "../services";
 import { OrderStatus } from "../types";
+import { useOrderStore } from "../store";
 
 interface UpdateOrderStatusCardProps {
     orderId: string;
@@ -30,6 +31,7 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 export function UpdateOrderStatusCard({ orderId, currentStatus }: UpdateOrderStatusCardProps) {
     const queryClient = useQueryClient();
     const [selectedStatus, setSelectedStatus] = useState<OrderStatus | "">("");
+    const { updateOrderStatusInStore } = useOrderStore();
 
     const nextPossibleStatuses = ALLOWED_TRANSITIONS[currentStatus] || [];
     const isFinalState = nextPossibleStatuses.length === 0;
@@ -37,8 +39,13 @@ export function UpdateOrderStatusCard({ orderId, currentStatus }: UpdateOrderSta
     const updateStatusMutation = useMutation({
         mutationFn: (status: OrderStatus) => orderService.updateOrderStatus(orderId, status),
         onSuccess: () => {
+            if (selectedStatus) {
+                updateOrderStatusInStore(orderId, selectedStatus as OrderStatus);
+                queryClient.setQueryData(["orders", "detail", orderId], (old: any) =>
+                    old ? { ...old, order_status: selectedStatus } : old
+                );
+            }
             queryClient.invalidateQueries({ queryKey: ["orders"] });
-            queryClient.invalidateQueries({ queryKey: ["order", orderId] });
             toast({
                 title: "Status Updated",
                 description: `Order status has been changed to ${selectedStatus}`,

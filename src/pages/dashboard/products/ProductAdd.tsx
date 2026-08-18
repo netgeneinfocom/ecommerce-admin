@@ -102,8 +102,8 @@ export default function ProductAdd() {
     avatarFile: null,
     coverImages: [],
     coverImageFiles: [],
-    return_policy_value: 0,
-    return_policy_unit: "hours",
+    return_policy_value: 3,
+    return_policy_unit: "days",
     return_policy_notes: "",
   });
 
@@ -399,8 +399,8 @@ export default function ProductAdd() {
                     <SelectValue placeholder="Select unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hours">Hours</SelectItem>
                     <SelectItem value="days">Days</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

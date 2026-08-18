@@ -81,12 +81,64 @@ const extractId = (val: any): string => {
   return "";
 };
 
+const extractDimensionId = (product: any, dimensionsList: Dimension[]): string => {
+  if (!product) return "";
+
+  // Possible fields where dimension might be stored
+  const dimRaw =
+    product.dimensions ??
+    product.dimension ??
+    product.dimension_id ??
+    product.dimensionId ??
+    product.product_dimension ??
+    product.metrics;
+
+  if (!dimRaw) return "";
+
+  // 1. If dimRaw is an object (e.g. { _id: "...", dimension_name: "kg" })
+  if (typeof dimRaw === "object") {
+    if (dimRaw._id) {
+      const matchById = dimensionsList.find((d) => d._id === dimRaw._id);
+      if (matchById) return matchById._id;
+    }
+    const dimName = dimRaw.dimension_name || dimRaw.name || dimRaw.label;
+    if (dimName && dimensionsList.length > 0) {
+      const matchByName = dimensionsList.find(
+        (d) => d.dimension_name.trim().toLowerCase() === String(dimName).trim().toLowerCase()
+      );
+      if (matchByName) return matchByName._id;
+    }
+    if (dimRaw._id) return dimRaw._id;
+  }
+
+  // 2. If dimRaw is a string (ID or dimension name)
+  if (typeof dimRaw === "string") {
+    const trimmed = dimRaw.trim();
+    if (!trimmed) return "";
+
+    if (dimensionsList.length > 0) {
+      // Direct ID match
+      const matchById = dimensionsList.find((d) => d._id === trimmed);
+      if (matchById) return matchById._id;
+
+      // Case-insensitive name match
+      const matchByName = dimensionsList.find(
+        (d) => d.dimension_name.trim().toLowerCase() === trimmed.toLowerCase()
+      );
+      if (matchByName) return matchByName._id;
+    }
+    return trimmed;
+  }
+
+  return "";
+};
+
 export default function ProductEdit() {
   const navigate = useNavigate();
   const { productId } = useParams();
   const { toast } = useToast();
 
-  const { currentProduct } = useProductStore();
+  const { currentProduct, setCurrentProduct } = useProductStore();
 
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -109,7 +161,7 @@ export default function ProductEdit() {
     subCategory: extractId(currentProduct?.product_sub_category),
     manufacturer: currentProduct?.manufacturer || "",
     tags: currentProduct?.tags?.map(t => t.tag_name) || [],
-    dimensionId: currentProduct?.dimensions || "", // Initialize with dimensions (could be ID or name)
+    dimensionId: extractId(currentProduct?.dimensions) || (typeof currentProduct?.dimensions === "string" ? currentProduct.dimensions : ""),
     price: currentProduct?.product_price || 0,
     discount: currentProduct?.discount_precentage || 0,
     newBadge: currentProduct?.isNew === true || currentProduct?.isNew === "1" || currentProduct?.isNew === "true",
@@ -119,8 +171,8 @@ export default function ProductEdit() {
     avatarFile: null,
     coverImages: currentProduct?.cover_images?.map(img => img.url) || [],
     coverImageFiles: [],
-    return_policy_value: currentProduct?.return_policy?.value || 0,
-    return_policy_unit: currentProduct?.return_policy?.unit || "hours",
+    return_policy_value: currentProduct?.return_policy?.value ?? 7,
+    return_policy_unit: currentProduct?.return_policy?.unit || "days",
     return_policy_notes: currentProduct?.return_policy?.policy_notes || "",
   });
 
@@ -146,15 +198,10 @@ export default function ProductEdit() {
           }));
           setDimensions(dimensionsList);
 
-          // Find the dimension ID that matches currentProduct.dimensions (which could be name or ID)
-          if (currentProduct?.dimensions) {
-            const currentDim = dimensionsList.find(d => 
-              d.dimension_name === currentProduct.dimensions || 
-              d._id === currentProduct.dimensions
-            );
-            if (currentDim) {
-              setFormData(prev => ({ ...prev, dimensionId: currentDim._id }));
-            }
+          // Find the dimension ID that matches current product's dimension (name, ID, or object)
+          const resolvedDimId = extractDimensionId(currentProduct, dimensionsList);
+          if (resolvedDimId) {
+            setFormData(prev => ({ ...prev, dimensionId: resolvedDimId }));
           }
         }
 
@@ -255,14 +302,23 @@ export default function ProductEdit() {
       apiFormData.append('sub_category_id', formData.subCategory);
 
       // Get dimension name from ID for the dimensions field
-      const selectedDimension = dimensions.find(d => d._id === formData.dimensionId);
+      const selectedDimension = dimensions.find(
+        (d) =>
+          d._id === formData.dimensionId ||
+          d.dimension_name.trim().toLowerCase() === formData.dimensionId.trim().toLowerCase()
+      );
+      const finalDimensionId = selectedDimension ? selectedDimension._id : formData.dimensionId;
       apiFormData.append('dimensions', selectedDimension?.dimension_name || '');
 
-      await productService.updateProduct(
+      const updateRes = await productService.updateProduct(
         productId,
         apiFormData,
-        formData.dimensionId
+        finalDimensionId
       );
+
+      if (updateRes?.success && updateRes?.product) {
+        setCurrentProduct(updateRes.product);
+      }
 
       toast({
         title: "Success",
@@ -460,8 +516,8 @@ export default function ProductEdit() {
                     <SelectValue placeholder="Select unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hours">Hours</SelectItem>
                     <SelectItem value="days">Days</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

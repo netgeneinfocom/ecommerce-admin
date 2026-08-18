@@ -15,25 +15,35 @@ import {
   WarehouseInformationCard,
   ReturnInformationCard,
   OrderInvoice,
+  useOrderStore,
 } from "@/features/dashboard/orders";
 
 export default function OrderDetail() {
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
+  const { currentOrder, orders, setCurrentOrder } = useOrderStore();
+
+  const cachedOrder = (currentOrder && currentOrder._id === orderId)
+    ? currentOrder
+    : orders.find(o => o._id === orderId);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["orders", "detail", orderId],
     queryFn: async () => {
+      if (cachedOrder) return cachedOrder;
       // Since there is no detail endpoint, we fetch all (or a large batch) and find the one we need
       const response = await orderService.fetchOrders(1, 100);
       const foundOrder = response.orders.find(o => o._id === orderId);
       if (!foundOrder) throw new Error("Order not found");
+      setCurrentOrder(foundOrder);
       return foundOrder;
     },
+    initialData: cachedOrder,
+    staleTime: 5 * 60 * 1000,
     enabled: !!orderId,
   });
 
-  const order = data;
+  const order = data || cachedOrder;
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
