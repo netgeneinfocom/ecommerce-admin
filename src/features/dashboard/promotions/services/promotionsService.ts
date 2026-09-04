@@ -17,8 +17,8 @@ export const promotionsService = {
         return response.data;
     },
 
-    updateCarouselItem: async (formData: FormData) => {
-        const response = await apiClient.put(CAROUSEL_ENDPOINTS.UPDATE, formData, {
+    updateCarouselItem: async (id: string, formData: FormData) => {
+        const response = await apiClient.put(`${CAROUSEL_ENDPOINTS.UPDATE}?carousel_id=${id}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },

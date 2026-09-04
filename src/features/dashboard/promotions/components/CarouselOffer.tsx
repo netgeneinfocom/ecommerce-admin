@@ -59,31 +59,38 @@ export function CarouselOffer() {
     });
 
     const { mutate: updateCarousel, isPending: isUpdating } = useMutation({
-        mutationFn: promotionsService.updateCarouselItem,
+        mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
+            promotionsService.updateCarouselItem(id, formData),
         onSuccess: (data) => {
-            if (data.success) {
+            if (data?.success) {
                 queryClient.invalidateQueries({ queryKey: ["carousel-items"] });
                 resetForm();
-                alert("Carousel item updated successfully");
+                alert(data.message || "Carousel item updated successfully");
+            } else {
+                alert(data?.message || "Failed to update carousel item");
             }
         },
-        onError: (error) => {
-            console.error(error);
-            alert("Failed to update carousel item");
+        onError: (error: any) => {
+            console.error("Update error:", error);
+            const msg = error.response?.data?.message || error.message || "Failed to update carousel item";
+            alert(msg);
         }
     });
 
     const { mutate: deleteCarousel, isPending: isDeleting } = useMutation({
         mutationFn: promotionsService.deleteCarouselItem,
         onSuccess: (data) => {
-            if (data.success) {
+            if (data?.success) {
                 queryClient.invalidateQueries({ queryKey: ["carousel-items"] });
-                alert("Carousel item deleted successfully");
+                alert(data.message || "Carousel item deleted successfully");
+            } else {
+                alert(data?.message || "Failed to delete carousel item");
             }
         },
-        onError: (error) => {
-            console.error(error);
-            alert("Failed to delete carousel item");
+        onError: (error: any) => {
+            console.error("Delete error:", error);
+            const msg = error.response?.data?.message || error.message || "Failed to delete carousel item";
+            alert(msg);
         }
     });
 
@@ -106,25 +113,29 @@ export function CarouselOffer() {
     });
 
     const handleAddItem = () => {
-        if (!form.title || !form.image || !association.id) {
-            alert("Please fill in all required fields (Title, Image, and Association)");
+        if (!form.title) {
+            alert("Please enter a title");
+            return;
+        }
+
+        if (!association.id) {
+            alert(`Please select a ${association.type || 'category'}`);
+            return;
+        }
+
+        if (!editingId && !selectedFile) {
+            alert("Please select an image file");
             return;
         }
 
         const formData = new FormData();
         formData.append("title", form.title);
         formData.append("description", form.description || "");
-        formData.append("association", association.type === 'brand' ? 'Brand' : 'Category'); // Capitalized as per request
 
-        // Use different keys/logic for Update vs Create if needed, 
-        // but typically based on the screenshot provided for update:
-        // Keys: category, brand (IDs), association, title, description
-        if (editingId) {
-            formData.append("carousel_id", editingId);
-        }
+        const assocType = association.type === 'brand' ? 'brand' : 'category';
+        formData.append("association", assocType);
 
-        // Use consistent keys 'brand' and 'category' for both Create and Update
-        if (association.type === 'brand') {
+        if (assocType === 'brand') {
             formData.append("brand", association.id);
         } else {
             formData.append("category", association.id);
@@ -132,14 +143,10 @@ export function CarouselOffer() {
 
         if (selectedFile) {
             formData.append("carousel_img", selectedFile);
-        } else if (!editingId) {
-            // If not editing, an image file is required for new creation
-            alert("Please select an image file");
-            return;
         }
 
         if (editingId) {
-            updateCarousel(formData);
+            updateCarousel({ id: editingId, formData });
         } else {
             addCarousel(formData);
         }
@@ -147,10 +154,11 @@ export function CarouselOffer() {
 
     const handleEdit = (item: CarouselResponseItem) => {
         setEditingId(item._id);
+        setSelectedFile(null);
         setForm({
-            title: item.carousel_title,
-            description: item.carousel_description,
-            image: item.carousel_url
+            title: item.carousel_title || "",
+            description: item.carousel_description || "",
+            image: item.carousel_url || ""
         });
 
         // Determine association type and ID
@@ -161,10 +169,16 @@ export function CarouselOffer() {
             const assoc = item.carousel_association.toLowerCase();
             if (assoc === 'brand') {
                 type = 'brand';
-                id = item.carousel_brand || '';
+                const rawBrand = item.carousel_brand;
+                id = (typeof rawBrand === 'object' && rawBrand !== null)
+                    ? ((rawBrand as any)._id || (rawBrand as any).brand_id || '')
+                    : (rawBrand || '');
             } else {
                 type = 'category';
-                id = item.carousel_category || '';
+                const rawCat = item.carousel_category;
+                id = (typeof rawCat === 'object' && rawCat !== null)
+                    ? ((rawCat as any)._id || (rawCat as any).category_id || '')
+                    : (rawCat || '');
             }
         }
 
@@ -212,7 +226,10 @@ export function CarouselOffer() {
                             <Label htmlFor="image">Slide Image</Label>
                             <ImageUploadPreview
                                 value={form.image}
-                                onChange={(val) => setForm({ ...form, image: val })}
+                                onChange={(val) => {
+                                    setForm({ ...form, image: val });
+                                    if (!val) setSelectedFile(null);
+                                }}
                                 onFileSelect={(file) => setSelectedFile(file)}
                                 aspectRatio="video"
                                 className="h-40"
@@ -306,9 +323,9 @@ export function CarouselOffer() {
                                     <TableCell>
                                         <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full capitalize">
                                             {item.carousel_association}
-                                            {item.carousel_association.toLowerCase() === 'brand'
-                                                ? ` - ${brandsData?.data.find(b => b.brand_id === item.carousel_brand)?.brand_name || 'Unknown'}`
-                                                : ` - ${categoriesData?.catgoryProducts.find(c => c.category_id === item.carousel_category)?.category_name || 'Unknown'}`
+                                            {item.carousel_association?.toLowerCase() === 'brand'
+                                                ? ` - ${brandsData?.data?.find(b => b.brand_id === ((typeof item.carousel_brand === 'object' && item.carousel_brand !== null) ? ((item.carousel_brand as any)._id || (item.carousel_brand as any).brand_id) : item.carousel_brand))?.brand_name || ((typeof item.carousel_brand === 'object' && item.carousel_brand !== null) ? (item.carousel_brand as any).brand_name : '') || 'Unknown'}`
+                                                : ` - ${categoriesData?.catgoryProducts?.find(c => c.category_id === ((typeof item.carousel_category === 'object' && item.carousel_category !== null) ? ((item.carousel_category as any)._id || (item.carousel_category as any).category_id) : item.carousel_category))?.category_name || ((typeof item.carousel_category === 'object' && item.carousel_category !== null) ? (item.carousel_category as any).category_name : '') || 'Unknown'}`
                                             }
                                         </span>
                                     </TableCell>
